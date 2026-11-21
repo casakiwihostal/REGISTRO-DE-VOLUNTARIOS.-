@@ -2181,6 +2181,10 @@
     .login-msg.ok { color: #d9f5c4; }
     .login-link { background: none; border: none; color: var(--dark-orange-light); font-size: 13px; cursor: pointer; padding: 0; margin-top: 14px; }
     .login-link:hover { text-decoration: underline; }
+    .login-sep { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; color: var(--text-muted); font-size: 12.5px; }
+    .login-sep::before, .login-sep::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
+    .btn-crear-cuenta { width: 100%; padding: 11px; border-radius: 5px; background: transparent; border: 1px solid var(--dark-orange); color: var(--dark-orange-light); font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-crear-cuenta:hover { background: rgba(204,75,0,.12); }
     .sesion-box { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 13px; color: var(--text-muted); white-space: nowrap; }
     .btn-salir {
       background: #282828; color: var(--text-muted); border: 1px solid var(--border-color);
@@ -2195,13 +2199,27 @@
     <div class="login-card">
       <form id="loginForm" autocomplete="on">
         <h2>Gestor de Voluntarios</h2>
-        <p class="login-sub">Casa Kiwi Hostel · Ingresa con tu usuario</p>
-        <label for="loginCorreo">Correo</label>
+        <p class="login-sub">Casa Kiwi Hostel · Ingresa con tu usuario <span style="opacity:.7;">/ Sign in</span></p>
+        <label for="loginCorreo">Correo <span style="opacity:.7;">/ Email</span></label>
         <input type="email" id="loginCorreo" autocomplete="username" required>
-        <label for="loginClave">Contraseña</label>
+        <label for="loginClave">Contraseña <span style="opacity:.7;">/ Password</span></label>
         <input type="password" id="loginClave" autocomplete="current-password" required>
-        <button type="submit" class="btn-submit" id="loginBtn">Ingresar</button>
-        <button type="button" class="login-link" onclick="olvideClave()">¿Olvidaste tu contraseña?</button>
+        <button type="submit" class="btn-submit" id="loginBtn">Ingresar <span style="opacity:.75; font-weight:400;">/ Sign in</span></button>
+        <button type="button" class="login-link" onclick="olvideClave()">¿Olvidaste tu contraseña? / Forgot password?</button>
+        <div class="login-sep"><span>¿Eres voluntario nuevo? / New volunteer?</span></div>
+        <button type="button" class="btn-crear-cuenta" onclick="mostrarCrearCuenta()">✨ Crear cuenta <span style="opacity:.75; font-weight:400;">/ Create account</span></button>
+      </form>
+      <form id="crearCuentaForm" style="display:none;" autocomplete="on">
+        <h2>Crear cuenta <span style="opacity:.6; font-weight:400;">/ Create account</span></h2>
+        <p class="login-sub">Para voluntarios de Casa Kiwi. Después llenarás tus datos y Casa Kiwi aprobará tu cuenta.<br><span style="opacity:.75;">For Casa Kiwi volunteers. You'll fill in your details next and Casa Kiwi will approve your account.</span></p>
+        <label for="ccCorreo">Correo <span style="opacity:.7;">/ Email</span></label>
+        <input type="email" id="ccCorreo" autocomplete="username" required>
+        <label for="ccClave">Contraseña <span style="opacity:.7;">/ Password (mín. 8)</span></label>
+        <input type="password" id="ccClave" autocomplete="new-password" minlength="8" required>
+        <label for="ccClave2">Repite la contraseña <span style="opacity:.7;">/ Repeat password</span></label>
+        <input type="password" id="ccClave2" autocomplete="new-password" minlength="8" required>
+        <button type="submit" class="btn-submit" id="ccBtn">Crear mi cuenta <span style="opacity:.75; font-weight:400;">/ Create</span></button>
+        <button type="button" class="login-link" onclick="mostrarLogin()">← Ya tengo cuenta / I have an account</button>
       </form>
       <form id="nuevaClaveForm" style="display:none;">
         <h2 id="nuevaClaveTitulo">Nueva contraseña</h2>
@@ -2253,7 +2271,7 @@
     </header>
 
     <nav class="tool-nav" id="toolNav">
-      <button type="button" data-vista="invitar" onclick="navegar('invitar')" title="Invitar a un voluntario con su correo">📧 Invitar</button>
+      <button type="button" data-vista="invitar" onclick="navegar('invitar')" title="Invitar voluntarios y aprobar cuentas nuevas">📧 Invitar <span class="nav-count" id="navCountInvitar" style="display:none;">0</span></button>
       <button type="button" data-vista="registro" onclick="nuevoRegistro()" title="Registrar un voluntario o pre-registro">＋ Registrar</button>
       <button type="button" data-vista="inicio" onclick="navegar('inicio')" title="Resumen del día y tareas pendientes">🏠 Inicio <span class="nav-count" id="navCountTareas">0</span></button>
       <button type="button" data-vista="calendario" onclick="navegar('calendario')" title="Estancias en el mes">📅 Calendario</button>
@@ -2876,6 +2894,11 @@
               <button type="button" class="btn-submit" id="invBtn" onclick="invitarDesdeFormulario()">📧 Enviar invitación</button>
             </div>
           </div>
+          <div class="panel" id="invPendientesPanel" style="display:none; border-color: var(--dark-orange);">
+            <h3>⏳ Cuentas nuevas por aprobar</h3>
+            <p class="view-desc" style="margin-top:0;">Personas que crearon su cuenta desde la página de entrada. Mientras no las apruebes, no ven horarios, tareas ni al equipo.</p>
+            <ul class="tareas-lista" id="invPendientes"></ul>
+          </div>
           <div class="panel">
             <h3>Invitaciones enviadas</h3>
             <ul class="tareas-lista" id="invLista"></ul>
@@ -3050,6 +3073,10 @@
           </div>
 
           <div id="pContenido">
+          <div class="onb-intro" id="pPendiente" style="display:none; order:-1;">
+            <strong>⏳ Tu cuenta está esperando la aprobación de Casa Kiwi.</strong> Cuando te aprueben verás aquí tus tareas y el horario del equipo.<br>
+            <span class="en">Your account is waiting for Casa Kiwi's approval. Once approved you'll see your tasks and the team schedule here.</span>
+          </div>
           <div class="aviso-sello" id="pAvisoSello" style="display:none;">
             <span>🛬 Falta la foto de tu sello de entrada a Colombia. <span style="opacity:.75;">/ Please upload your Colombia entry stamp.</span></span>
             <label class="btn-foto">📷 Subir sello / Upload stamp<input type="file" accept="image/*,application/pdf" onchange="subirSelloPendiente(this)"></label>
@@ -4698,6 +4725,7 @@
         registroCompletoEn: row.registro_completo_en || null,
         registroDiferencias: row.registro_diferencias || null,
         avatar: row.avatar || null,
+        aprobado: row.aprobado !== false,
         createdAt: row.created_at
       };
     }
@@ -4890,7 +4918,7 @@
         let rowHtml = `
           <td class="cal-row-label"><div class="cal-label-flex">${htmlAvatar(v.avatar, 32)}<div>
             <div class="cal-user-name" onclick="verFicha(${v.id})" title="Ver ficha de ${escaparHTML(v.nombre)}">
-              ${v.esPreRegistro ? '<span style="color:#ff914d;">[Pre] </span>' : ''}${v.esCheckout ? '<span style="color:#9fb3c8;">✔ </span>' : ''}${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)}
+              ${!v.aprobado ? '<span title="Cuenta por aprobar">⏳ </span>' : ''}${v.esPreRegistro ? '<span style="color:#ff914d;">[Pre] </span>' : ''}${v.esCheckout ? '<span style="color:#9fb3c8;">✔ </span>' : ''}${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)}
             </div>
             <div class="cal-user-meta">
               <span>${iconoHab} ${escaparHTML(v.pais)}</span>
@@ -5037,6 +5065,7 @@
         renderizarPerfiles();
         actualizarContadoresNav();
         actualizarNotificaciones();
+        if (esAdmin()) renderizarPendientesAprobacion();
         const hora = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
         estadoConexion(`🟢 Conectado · actualizado ${hora}`, 'ok');
       } catch (error) {
@@ -5728,7 +5757,47 @@
       renderizarInvitaciones();
     }
 
+    function renderizarPendientesAprobacion() {
+      const pend = voluntarios.filter(v => !v.aprobado);
+      const badge = document.getElementById('navCountInvitar');
+      if (badge) { badge.textContent = pend.length; badge.style.display = pend.length ? '' : 'none'; }
+      const panel = document.getElementById('invPendientesPanel');
+      const cont = document.getElementById('invPendientes');
+      if (!panel || !cont) return;
+      panel.style.display = pend.length ? '' : 'none';
+      cont.innerHTML = pend.map(v => `
+        <li>
+          ${htmlAvatar(v.avatar, 34)}
+          <div style="min-width:0;">
+            <div class="t-titulo">${v.sinNombre ? escaparHTML(v.correo) : `${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)}`}</div>
+            <div class="t-meta">${escaparHTML(v.correo)} · ${v.registroCompleto ? `✅ llenó sus datos · llega ${escaparHTML(v.fechaLlegada)}` : '⏳ aún no llena sus datos'}</div>
+          </div>
+          <div style="margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+            ${v.registroCompleto ? `<button class="btn-icon btn-view" onclick="verFicha(${v.id})">🔍 Ficha</button>` : ''}
+            <button class="btn-icon btn-checkin" onclick="aprobarCuenta(${v.id})">✓ Aprobar</button>
+            <button class="btn-icon btn-delete" onclick="rechazarCuenta(${v.id})">✕ Rechazar</button>
+          </div>
+        </li>`).join('');
+    }
+
+    async function aprobarCuenta(id) {
+      const { error } = await supabaseClient.from(TABLA_VOLUNTARIOS).update({ aprobado: true }).eq('id', id);
+      if (error) { mostrarErrorSupabase('No se pudo aprobar la cuenta', error); return; }
+      toast('✅ Cuenta aprobada', 'ok');
+      await cargarVoluntarios();
+    }
+
+    async function rechazarCuenta(id) {
+      const v = voluntarios.find(x => x.id === id);
+      if (!confirm(`¿Rechazar la cuenta de ${v ? (v.sinNombre ? v.correo : v.nombre + ' ' + v.primerApellido) : 'esta persona'}?\n\nSe borra su ficha y no podrá volver a entrar con ese usuario.`)) return;
+      const { error } = await supabaseClient.rpc('rechazar_cuenta', { vid: id });
+      if (error) { mostrarErrorSupabase('No se pudo rechazar la cuenta', error); return; }
+      toast('Cuenta rechazada', 'ok');
+      await cargarVoluntarios();
+    }
+
     function renderizarInvitaciones() {
+      renderizarPendientesAprobacion();
       const cont = document.getElementById('invLista');
       if (!cont) return;
       if (!invitaciones.length) { cont.innerHTML = '<li class="vacio">Todavía no has enviado invitaciones.</li>'; return; }
@@ -6042,6 +6111,8 @@
         return;
       }
       document.getElementById('pAvisoSello').style.display = yo.fotoSello ? 'none' : 'flex';
+      document.getElementById('pPendiente').style.display = yo.aprobado ? 'none' : '';
+      document.querySelectorAll('#pContenido .p-tareas, #pContenido .p-horario').forEach(el => { el.style.display = yo.aprobado ? '' : 'none'; });
       const vistaAv = document.getElementById('pAvatarVista');
       const nuevoAv = JSON.stringify(yo.avatar || null);
       if (vistaAv.dataset.av !== nuevoAv) { vistaAv.dataset.av = nuevoAv; vistaAv.innerHTML = htmlAvatar(yo.avatar, 110); }
@@ -6501,7 +6572,17 @@
       loginMsg.textContent = texto;
     }
 
+    function mostrarCrearCuenta() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('crearCuentaForm').style.display = '';
+      const c = document.getElementById('loginCorreo').value;
+      if (c) document.getElementById('ccCorreo').value = c;
+      mensajeLogin('');
+      document.getElementById('ccCorreo').focus();
+    }
+
     function mostrarLogin(texto = '', tipo = 'error') {
+      document.getElementById('crearCuentaForm').style.display = 'none';
       document.getElementById('loginForm').style.display = '';
       document.getElementById('nuevaClaveForm').style.display = 'none';
       loginOverlay.style.display = 'flex';
@@ -6601,6 +6682,34 @@
         return;
       }
       verificarAcceso(data.session);
+    });
+
+    document.getElementById('crearCuentaForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const correo = document.getElementById('ccCorreo').value.trim().toLowerCase();
+      const clave = document.getElementById('ccClave').value;
+      if (clave.length < 8) { mensajeLogin('La contraseña debe tener mínimo 8 caracteres.\nPassword must be at least 8 characters.'); return; }
+      if (clave !== document.getElementById('ccClave2').value) { mensajeLogin('Las contraseñas no coinciden.\nPasswords do not match.'); return; }
+      const btn = document.getElementById('ccBtn');
+      btn.disabled = true; mensajeLogin('Creando tu cuenta… / Creating your account…', 'ok');
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: correo, password: clave,
+        options: { data: { clave_creada: true }, emailRedirectTo: location.origin + location.pathname }
+      });
+      btn.disabled = false;
+      if (error) {
+        mensajeLogin(/registered|already/i.test(error.message)
+          ? 'Ese correo ya tiene cuenta: entra con tu contraseña.\nThis email already has an account: sign in.'
+          : 'No se pudo crear la cuenta / Could not create account: ' + error.message);
+        return;
+      }
+      if (data.session) { verificarAcceso(data.session); return; }
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        mostrarLogin('Ese correo ya tiene cuenta: entra con tu contraseña o usa "¿Olvidaste tu contraseña?".\nThis email already has an account.');
+      } else {
+        mostrarLogin('Revisa tu correo para confirmar la cuenta y luego entra aquí.\nCheck your email to confirm, then sign in here.', 'ok');
+      }
+      document.getElementById('loginCorreo').value = correo;
     });
 
     document.getElementById('nuevaClaveForm').addEventListener('submit', async (e) => {
