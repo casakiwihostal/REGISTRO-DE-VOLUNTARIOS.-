@@ -2064,6 +2064,20 @@
     .turno .turno-quien { display: flex; align-items: center; gap: 5px; }
     #mAvatar { display: flex; justify-content: center; margin: 4px 0 6px; }
 
+    /* ===== SIRE ===== */
+    .sire-banner { border-radius: 10px; margin: -8px 0 18px; border: 1px solid #2b441a; background: #151d10; color: #d9f5c4; font-size: 14px; }
+    .sire-banner.hoy { border-color: #7a5a00; background: #221b06; color: #ffd98a; }
+    .sire-banner.tarde { border-color: #8a1c1c; background: #2a0a0a; color: #ffc2c2; }
+    .sire-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; flex-wrap: wrap; }
+    .sire-prox { opacity: .8; font-weight: 400; }
+    .sire-toggle { font-size: 13px; opacity: .85; white-space: nowrap; }
+    .sire-cuerpo { padding: 0 14px 14px; color: var(--text-main); }
+    .sire-nota { font-size: 13px; color: var(--text-muted); margin: 0 0 8px; }
+    .sire-chip { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: 1px; }
+    .sire-chip.hoy { background: #7a5a00; color: #fff3cc; }
+    .sire-chip.tarde { background: #8a1c1c; color: #ffe0e0; }
+    .sire-linea { font-size: 14px; margin-top: 4px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+
     /* ===== PASOS DEL REGISTRO ===== */
     .onb-pasos { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .onb-pasos > span { flex: 1; min-width: 140px; text-align: center; padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-muted); }
@@ -2281,6 +2295,8 @@
       <button type="button" data-vista="horarios" onclick="navegar('horarios')" title="Turnos de la semana y tareas">🕒 Horarios y tareas</button>
       <button type="button" data-vista="perfiles" onclick="navegar('perfiles')" title="Áreas de voluntariado">🏷️ Perfiles <span class="nav-count" id="navCountPerfiles">0</span></button>
     </nav>
+
+    <div id="sireBanner" class="sire-banner" style="display:none;"></div>
 
     <div class="layout-grid">
       <!-- Columna Principal -->
@@ -4735,6 +4751,8 @@
         registroDiferencias: row.registro_diferencias || null,
         avatar: row.avatar || null,
         aprobado: row.aprobado !== false,
+        sireIngresoEn: row.sire_ingreso_en || null,
+        sireSalidaEn: row.sire_salida_en || null,
         createdAt: row.created_at
       };
     }
@@ -5075,6 +5093,7 @@
         actualizarContadoresNav();
         actualizarNotificaciones();
         if (esAdmin()) renderizarPendientesAprobacion();
+        renderizarSire();
         const hora = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
         estadoConexion(`🟢 Conectado · actualizado ${hora}`, 'ok');
       } catch (error) {
@@ -6579,6 +6598,7 @@
       cont.innerHTML = `
         <span class="modal-label" style="display:block; margin-top:14px;">Registro del voluntario</span>
         <div style="font-size:14px; margin-top:4px;">${estado}</div>${difs}
+        ${htmlSireFicha(v)}
         <div class="docs-ficha">${esColombiano(v.pais)
           ? caja('🪪 Cédula adelante', 'mDocPas') + caja('🪪 Cédula atrás', 'mDocRev')
           : caja('🛂 Pasaporte', 'mDocPas') + caja('🛬 Sello de entrada', 'mDocSel')}</div>`;
@@ -6595,6 +6615,135 @@
       pintar('mDocPas', v.fotoPasaporte);
       if (esColombiano(v.pais)) pintar('mDocRev', v.fotoReverso);
       else pintar('mDocSel', v.fotoSello);
+    }
+
+    // ===== RECORDATORIO SIRE (Migración Colombia) =====
+    // Hospedajes: el ingreso y la salida de cada extranjero se reportan el MISMO DÍA (Res. 2357 de 2020, art. 6).
+    const SIRE_URL = 'https://apps.migracioncolombia.gov.co/sire/public/login.jsf';
+    const SIRE_DESDE = '2026-11-21';   // los recordatorios empiezan a contar desde esta fecha
+    let sirePendientesPrevios = null;   // para avisar cuando aparece un pendiente nuevo
+    let sirePanelAbierto = false;
+
+    function diasDesde(iso, hasta) {
+      const [y1, m1, d1] = iso.split('-').map(Number);
+      const [y2, m2, d2] = hasta.split('-').map(Number);
+      return Math.round((new Date(y2, m2 - 1, d2) - new Date(y1, m1 - 1, d1)) / 86400000);
+    }
+
+    function salidaRealISO(v) {
+      if (v.esCheckout && v.fechaCheckout) return fechaVisualAISO(v.fechaCheckout);
+      return v.fechaSalida ? fechaVisualAISO(v.fechaSalida) : null;
+    }
+
+    function necesitaSire(v) { return !esColombiano(v.pais) && !v.sinNombre; }
+
+    function pendientesSire() {
+      const hoy = isoHoy();
+      const lista = [];
+      voluntarios.filter(necesitaSire).forEach(v => {
+        const llegada = v.fechaLlegada ? fechaVisualAISO(v.fechaLlegada) : null;
+        if (!v.esPreRegistro && llegada && llegada <= hoy && llegada >= SIRE_DESDE && !v.sireIngresoEn) {
+          lista.push({ v, tipo: 'ingreso', fecha: llegada, dias: diasDesde(llegada, hoy) });
+        }
+        const salida = salidaRealISO(v);
+        if (salida && salida <= hoy && salida >= SIRE_DESDE && !v.sireSalidaEn) {
+          lista.push({ v, tipo: 'salida', fecha: salida, dias: diasDesde(salida, hoy) });
+        }
+      });
+      return lista.sort((a, b) => b.dias - a.dias);
+    }
+
+    function proximosSire() {
+      const manana = sumarDiasISO(isoHoy(), 1);
+      const llegan = voluntarios.filter(v => necesitaSire(v) && v.fechaLlegada && fechaVisualAISO(v.fechaLlegada) === manana);
+      const salen = voluntarios.filter(v => necesitaSire(v) && !v.esCheckout && salidaRealISO(v) === manana);
+      return { llegan, salen };
+    }
+
+    function chipSire(p) {
+      if (p.dias <= 0) return '<span class="sire-chip hoy">Vence hoy</span>';
+      return `<span class="sire-chip tarde">Atrasado ${p.dias} día${p.dias === 1 ? '' : 's'}</span>`;
+    }
+
+    function renderizarSire() {
+      const banner = document.getElementById('sireBanner');
+      if (!banner) return;
+      if (!['admin', 'recepcion'].includes(rolActual())) { banner.style.display = 'none'; return; }
+      const pend = pendientesSire();
+      const prox = proximosSire();
+      const hoyN = pend.filter(p => p.dias <= 0).length;
+      const tardeN = pend.length - hoyN;
+
+      // Aviso emergente cuando aparece un reporte nuevo (por ejemplo, después de un check-in o check-out)
+      const claves = new Set(pend.map(p => p.tipo + p.v.id));
+      if (sirePendientesPrevios) {
+        pend.filter(p => !sirePendientesPrevios.has(p.tipo + p.v.id)).forEach(p => {
+          toast(`🛂 Recuerda reportar hoy en SIRE la ${p.tipo === 'ingreso' ? 'llegada' : 'salida'} de ${p.v.nombre} ${p.v.primerApellido}.`, 'ok', 9000);
+        });
+      }
+      sirePendientesPrevios = claves;
+
+      const proxTexto = [
+        prox.llegan.length ? `mañana llegan ${prox.llegan.length} extranjero(s)` : '',
+        prox.salen.length ? `mañana salen ${prox.salen.length}` : ''
+      ].filter(Boolean).join(' · ');
+
+      banner.style.display = '';
+      banner.className = 'sire-banner ' + (tardeN ? 'tarde' : (hoyN ? 'hoy' : 'ok'));
+      banner.innerHTML = `
+        <div class="sire-head" onclick="sirePanelAbierto = !sirePanelAbierto; renderizarSire();">
+          <span>🛂 <strong>Reporte SIRE:</strong> ${pend.length
+            ? `${pend.length} pendiente${pend.length === 1 ? '' : 's'}${tardeN ? ` · ${tardeN} atrasado${tardeN === 1 ? '' : 's'}` : ''}${hoyN ? ` · ${hoyN} vence${hoyN === 1 ? '' : 'n'} hoy` : ''}`
+            : 'al día ✓'}${proxTexto ? ` <span class="sire-prox">· ${proxTexto}</span>` : ''}</span>
+          <span class="sire-toggle">${sirePanelAbierto ? 'Ocultar ▲' : 'Ver ▼'}</span>
+        </div>
+        ${sirePanelAbierto ? `
+        <div class="sire-cuerpo">
+          <p class="sire-nota">Los extranjeros se reportan en SIRE <strong>el mismo día</strong> que llegan y que se van. Cuando lo hagas, toca "Ya lo reporté".</p>
+          ${pend.length ? `<ul class="tareas-lista">${pend.map(p => `
+            <li>
+              ${htmlAvatar(p.v.avatar, 34)}
+              <div style="min-width:0;">
+                <div class="t-titulo">${p.tipo === 'ingreso' ? '🛬 Ingreso' : '🛫 Salida'} · ${escaparHTML(p.v.nombre)} ${escaparHTML(p.v.primerApellido)} ${chipSire(p)}</div>
+                <div class="t-meta">${escaparHTML(p.v.pais)} · ${escaparHTML(p.v.tipoDocumento)} ${escaparHTML(p.v.documento)} · nac. ${escaparHTML(p.v.fechaNacimiento)} · ${p.tipo === 'ingreso' ? 'llegó' : 'salió'} el ${fechaISOAVisual(p.fecha)}</div>
+              </div>
+              <div style="margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="btn-icon btn-view" onclick="verFicha(${p.v.id})">🔍 Ficha</button>
+                <button class="btn-icon btn-checkin" onclick="marcarSire(${p.v.id}, '${p.tipo}', true)">✓ Ya lo reporté</button>
+              </div>
+            </li>`).join('')}</ul>` : '<div class="vacio">No hay reportes pendientes. 🎉</div>'}
+          ${proxTexto ? `<p class="sire-nota" style="margin-top:10px;">📅 Mañana: ${[
+            ...prox.llegan.map(v => `llega ${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)}`),
+            ...prox.salen.map(v => `sale ${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)}`)].join(' · ')}</p>` : ''}
+          <a class="btn-submit" href="${SIRE_URL}" target="_blank" rel="noopener" style="text-decoration:none; margin-top:10px;">Abrir SIRE ↗</a>
+        </div>` : ''}`;
+    }
+
+    async function marcarSire(id, tipo, reportado) {
+      const campo = tipo === 'ingreso' ? 'sire_ingreso_en' : 'sire_salida_en';
+      const { error } = await supabaseClient.from(TABLA_VOLUNTARIOS).update({ [campo]: reportado ? new Date().toISOString() : null }).eq('id', id);
+      if (error) { mostrarErrorSupabase('No se pudo guardar el reporte SIRE', error); return; }
+      toast(reportado ? '✅ Reporte SIRE marcado como hecho' : 'Reporte SIRE marcado como pendiente', 'ok');
+      await cargarVoluntarios();
+      if (infoModal.style.display === 'flex') verFicha(id);
+    }
+
+    // Estado SIRE dentro de la ficha
+    function htmlSireFicha(v) {
+      if (!necesitaSire(v)) return '';
+      const linea = (tipo, fecha, hecho) => {
+        const etiqueta = tipo === 'ingreso' ? '🛬 Ingreso' : '🛫 Salida';
+        if (hecho) return `<div class="sire-linea">${etiqueta}: ✅ reportado el ${new Date(hecho).toLocaleDateString('es-CO')} <button class="login-link" style="margin:0 0 0 8px;" onclick="marcarSire(${v.id}, '${tipo}', false)">deshacer</button></div>`;
+        if (!fecha) return `<div class="sire-linea">${etiqueta}: —</div>`;
+        const hoy = isoHoy();
+        if (fecha > hoy) return `<div class="sire-linea">${etiqueta}: reportar el ${fechaISOAVisual(fecha)}</div>`;
+        if (fecha < SIRE_DESDE) return `<div class="sire-linea">${etiqueta}: ${fechaISOAVisual(fecha)} <span style="color:var(--text-muted);">(antes de empezar el seguimiento) <button class="login-link" style="margin:0 0 0 6px;" onclick="marcarSire(${v.id}, '${tipo}', true)">marcar como reportado</button></span></div>`;
+        return `<div class="sire-linea">${etiqueta}: ⚠️ <strong>pendiente</strong> (${fechaISOAVisual(fecha)}) <button class="btn-icon btn-checkin" style="margin-left:8px;" onclick="marcarSire(${v.id}, '${tipo}', true)">✓ Ya lo reporté</button></div>`;
+      };
+      return `<span class="modal-label" style="display:block; margin-top:14px;">Reporte SIRE (Migración Colombia)</span>
+        ${linea('ingreso', v.fechaLlegada && !v.esPreRegistro ? fechaVisualAISO(v.fechaLlegada) : null, v.sireIngresoEn)}
+        ${linea('salida', salidaRealISO(v), v.sireSalidaEn)}
+        <a href="${SIRE_URL}" target="_blank" rel="noopener" class="login-link" style="display:inline-block; margin-top:6px;">Abrir SIRE ↗</a>`;
     }
 
     // ===== INGRESO (Supabase Auth) =====
