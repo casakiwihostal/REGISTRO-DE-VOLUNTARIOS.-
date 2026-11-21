@@ -1975,9 +1975,67 @@
         padding: 0 16px 60px;
       }
     }
+
+    /* ===== LOGIN ===== */
+    .login-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-color); padding: 20px;
+    }
+    .login-card {
+      width: 100%; max-width: 380px;
+      background: var(--surface-bg); border: 1px solid var(--border-color);
+      border-radius: 10px; padding: 28px 26px;
+    }
+    .login-card h2 { margin: 0 0 4px; font-size: 20px; color: var(--text-main); }
+    .login-card p.login-sub { margin: 0 0 20px; font-size: 13px; color: var(--text-muted); }
+    .login-card label { display: block; font-size: 13px; color: var(--text-muted); margin: 12px 0 5px; }
+    .login-card input {
+      width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px;
+      background: var(--card-bg); color: var(--text-main);
+      border: 1px solid var(--border-color); border-radius: 5px;
+    }
+    .login-card input:focus { outline: none; border-color: var(--dark-orange); }
+    .login-card .btn-submit { width: 100%; justify-content: center; margin-top: 18px; }
+    .login-card .btn-submit:disabled { opacity: .6; cursor: wait; }
+    .login-msg { min-height: 18px; margin-top: 12px; font-size: 13px; white-space: pre-wrap; }
+    .login-msg.error { color: #ffb3b3; }
+    .login-msg.ok { color: #d9f5c4; }
+    .login-link { background: none; border: none; color: var(--dark-orange-light); font-size: 13px; cursor: pointer; padding: 0; margin-top: 14px; }
+    .login-link:hover { text-decoration: underline; }
+    .sesion-box { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+    .btn-salir {
+      background: #282828; color: var(--text-muted); border: 1px solid var(--border-color);
+      border-radius: 20px; padding: 5px 12px; font-size: 13px; cursor: pointer;
+    }
+    .btn-salir:hover { color: #fff; background: #363636; }
   </style>
 </head>
 <body>
+  <!-- PANTALLA DE INGRESO -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <form id="loginForm" autocomplete="on">
+        <h2>Gestor de Voluntarios</h2>
+        <p class="login-sub">Casa Kiwi Hostel · Ingresa con tu usuario</p>
+        <label for="loginCorreo">Correo</label>
+        <input type="email" id="loginCorreo" autocomplete="username" required>
+        <label for="loginClave">Contraseña</label>
+        <input type="password" id="loginClave" autocomplete="current-password" required>
+        <button type="submit" class="btn-submit" id="loginBtn">Ingresar</button>
+        <button type="button" class="login-link" onclick="olvideClave()">¿Olvidaste tu contraseña?</button>
+      </form>
+      <form id="nuevaClaveForm" style="display:none;">
+        <h2>Nueva contraseña</h2>
+        <p class="login-sub">Escribe tu nueva contraseña (mínimo 8 caracteres).</p>
+        <label for="nuevaClave">Nueva contraseña</label>
+        <input type="password" id="nuevaClave" autocomplete="new-password" minlength="8" required>
+        <button type="submit" class="btn-submit">Guardar contraseña</button>
+      </form>
+      <div id="loginMsg" class="login-msg"></div>
+    </div>
+  </div>
+
 
   <div class="cover"></div>
 
@@ -2010,7 +2068,10 @@
         <h1 class="page-title">Gestor de Voluntarios</h1>
         <p class="page-desc" style="margin-bottom:0;">Candidatos, registros, camas y estancias de los voluntarios en un solo lugar.</p>
       </div>
-      <div id="dbStatus" class="db-status">⏳ Conectando…</div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end;">
+        <div class="sesion-box"><span id="sesionUsuario"></span><button type="button" class="btn-salir" onclick="cerrarSesion()">Salir</button></div>
+        <div id="dbStatus" class="db-status">⏳ Conectando…</div>
+      </div>
     </header>
 
     <nav class="tool-nav" id="toolNav">
@@ -5063,11 +5124,121 @@
     renderizarChipsPerfilFormulario();
     mostrarVista(location.hash.slice(1) || VISTA_INICIAL);
 
-    cargarVoluntarios().then(cargarCandidatos);
-    setInterval(async () => {
-      await cargarVoluntarios();
-      await cargarCandidatos();
-    }, 30000);
+    // ===== INGRESO (Supabase Auth) =====
+    // usuarioActual = { id, correo, nombre, rol }  rol: 'admin' | 'recepcion' | 'voluntario'
+    let usuarioActual = null;
+    let intervaloRecarga = null;
+    const ROLES_EQUIPO = ['admin', 'recepcion'];
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginMsg = document.getElementById('loginMsg');
+
+    function mensajeLogin(texto, tipo = 'error') {
+      loginMsg.className = `login-msg ${tipo}`;
+      loginMsg.textContent = texto;
+    }
+
+    function mostrarLogin(texto = '', tipo = 'error') {
+      document.getElementById('loginForm').style.display = '';
+      document.getElementById('nuevaClaveForm').style.display = 'none';
+      loginOverlay.style.display = 'flex';
+      mensajeLogin(texto, tipo);
+    }
+
+    async function verificarAcceso(session) {
+      if (!session) { mostrarLogin(); return; }
+      const { data, error } = await supabaseClient
+        .from('usuarios')
+        .select('id, correo, nombre, rol')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      if (error || !data || !ROLES_EQUIPO.includes(data.rol)) {
+        await supabaseClient.auth.signOut();
+        mostrarLogin(error
+          ? 'No se pudo verificar tu usuario: ' + error.message
+          : 'Tu usuario no tiene acceso al gestor. Pídele acceso al administrador.');
+        return;
+      }
+      usuarioActual = data;
+      document.getElementById('sesionUsuario').textContent =
+        `${data.nombre || data.correo} · ${data.rol === 'admin' ? 'Admin' : 'Recepción'}`;
+      loginOverlay.style.display = 'none';
+      iniciarApp();
+    }
+
+    function iniciarApp() {
+      cargarVoluntarios().then(cargarCandidatos);
+      if (!intervaloRecarga) {
+        intervaloRecarga = setInterval(async () => {
+          await cargarVoluntarios();
+          await cargarCandidatos();
+        }, 30000);
+      }
+    }
+
+    function detenerApp() {
+      if (intervaloRecarga) { clearInterval(intervaloRecarga); intervaloRecarga = null; }
+      usuarioActual = null;
+    }
+
+    async function cerrarSesion() {
+      await supabaseClient.auth.signOut();
+      detenerApp();
+      location.reload(); // limpia de la pantalla los datos cargados
+    }
+
+    async function olvideClave() {
+      const correo = document.getElementById('loginCorreo').value.trim();
+      if (!correo) { mensajeLogin('Escribe tu correo arriba y vuelve a tocar "¿Olvidaste tu contraseña?".'); return; }
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(correo, {
+        redirectTo: location.origin + location.pathname
+      });
+      if (error) mensajeLogin('No se pudo enviar el correo: ' + error.message);
+      else mensajeLogin('Si el correo está registrado, te llegará un enlace para crear una nueva contraseña.', 'ok');
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true; mensajeLogin('Ingresando…', 'ok');
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: document.getElementById('loginCorreo').value.trim(),
+        password: document.getElementById('loginClave').value
+      });
+      btn.disabled = false;
+      if (error) {
+        mensajeLogin(/invalid/i.test(error.message) ? 'Correo o contraseña incorrectos.' : error.message);
+        return;
+      }
+      verificarAcceso(data.session);
+    });
+
+    document.getElementById('nuevaClaveForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { error } = await supabaseClient.auth.updateUser({ password: document.getElementById('nuevaClave').value });
+      if (error) { mensajeLogin('No se pudo cambiar: ' + error.message); return; }
+      history.replaceState(null, '', location.pathname);
+      const { data } = await supabaseClient.auth.getSession();
+      verificarAcceso(data.session);
+    });
+
+    supabaseClient.auth.onAuthStateChange((evento) => {
+      if (evento === 'PASSWORD_RECOVERY') {
+        loginOverlay.style.display = 'flex';
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('nuevaClaveForm').style.display = '';
+        mensajeLogin('');
+      } else if (evento === 'SIGNED_OUT' && usuarioActual) {
+        detenerApp();
+        mostrarLogin('Tu sesión se cerró. Vuelve a ingresar.');
+      }
+    });
+
+    // Se lee ahora (antes de que Supabase limpie la URL) para saber si viene del enlace de "olvidé mi contraseña"
+    const esRecuperacion = location.hash.includes('type=recovery');
+    supabaseClient.auth.getSession().then(({ data }) => {
+      if (esRecuperacion) return; // lo maneja PASSWORD_RECOVERY
+      verificarAcceso(data.session);
+    });
   </script>
 
 </body>
