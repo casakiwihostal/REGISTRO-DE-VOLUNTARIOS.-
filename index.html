@@ -1976,6 +1976,56 @@
       }
     }
 
+    /* ===== ROLES ===== */
+    body[data-rol="recepcion"] .solo-admin,
+    body[data-rol="voluntario"] .solo-admin { display: none !important; }
+    body[data-rol="voluntario"] .tool-nav,
+    body[data-rol="voluntario"] .page-desc,
+    body[data-rol="voluntario"] #dbStatus { display: none !important; }
+    .perfil-ayuda { width: 100%; font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ===== CALENDARIO POR ÁREA ===== */
+    tr.cal-grupo td { background: #1c1c1c; }
+    .cal-grupo-label { padding-top: 10px !important; padding-bottom: 8px !important; }
+    .cal-grupo-nombre { font-weight: 700; font-size: 14px; color: var(--text-main); }
+    .cal-grupo-cell { text-align: center; font-weight: 700; font-size: 12px; color: var(--dark-orange-light); }
+
+    /* ===== FICHA: ACCIONES ===== */
+    .modal-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-color); }
+
+    /* ===== HORARIOS Y TAREAS ===== */
+    .panel { background: var(--surface-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 18px; }
+    .panel h3 { margin: 0 0 12px; font-size: 16px; color: var(--text-main); }
+    .fila-campos { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .fila-campos .disp-field label { font-size: 12.5px; color: var(--text-muted); }
+    .dias-check { display: flex; gap: 4px; flex-wrap: wrap; }
+    .dias-check label { display: inline-flex; align-items: center; gap: 4px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 6px 10px; font-size: 12.5px; cursor: pointer; color: var(--text-main); }
+    .dias-check input { width: auto; margin: 0; }
+    .semana-nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .semana-titulo { font-weight: 700; font-size: 15px; margin-right: auto; color: var(--text-main); }
+    .horario-scroll { overflow-x: auto; }
+    .horario-tabla { width: 100%; border-collapse: collapse; min-width: 760px; table-layout: fixed; }
+    .horario-tabla th, .horario-tabla td { border: 1px solid var(--border-color); padding: 6px; vertical-align: top; font-size: 12.5px; }
+    .horario-tabla th { background: #1c1c1c; color: var(--text-muted); font-weight: 600; }
+    .horario-tabla th.es-hoy { color: var(--dark-orange-light); }
+    .horario-tabla td.area { width: 120px; font-weight: 700; color: var(--text-main); background: #1c1c1c; }
+    .turno { display: block; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 6px; margin-bottom: 4px; color: var(--text-main); line-height: 1.3; }
+    .turno small { color: var(--text-muted); display: block; }
+    .turno.mio { border-color: var(--dark-orange); background: rgba(204,75,0,.18); }
+    .turno .quitar { float: right; background: none; border: none; color: #ff8a8a; cursor: pointer; font-size: 14px; padding: 0 0 0 4px; }
+    .tareas-lista { list-style: none; padding: 0; margin: 0; }
+    .tareas-lista li { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); }
+    .tareas-lista li.hecha .t-titulo { text-decoration: line-through; color: var(--text-muted); }
+    .tareas-lista input[type="checkbox"] { width: 18px; height: 18px; margin: 0; flex-shrink: 0; }
+    .tareas-lista .t-meta { font-size: 12px; color: var(--text-muted); }
+    .tareas-lista .t-quien { font-size: 12px; color: var(--dark-orange-light); font-weight: 600; }
+    .tareas-lista .quitar { margin-left: auto; background: none; border: none; color: #ff8a8a; cursor: pointer; }
+    .portal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; align-items: start; margin-bottom: 18px; }
+    .portal-grid .panel { margin-bottom: 0; }
+    .dato { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+    .dato span:first-child { color: var(--text-muted); }
+    .vacio { color: var(--text-muted); font-size: 13.5px; padding: 8px 0; }
+
     /* ===== LOGIN ===== */
     .login-overlay {
       position: fixed; inset: 0; z-index: 9999;
@@ -2026,8 +2076,8 @@
         <button type="button" class="login-link" onclick="olvideClave()">¿Olvidaste tu contraseña?</button>
       </form>
       <form id="nuevaClaveForm" style="display:none;">
-        <h2>Nueva contraseña</h2>
-        <p class="login-sub">Escribe tu nueva contraseña (mínimo 8 caracteres).</p>
+        <h2 id="nuevaClaveTitulo">Nueva contraseña</h2>
+        <p class="login-sub" id="nuevaClaveSub">Escribe tu nueva contraseña (mínimo 8 caracteres).</p>
         <label for="nuevaClave">Nueva contraseña</label>
         <input type="password" id="nuevaClave" autocomplete="new-password" minlength="8" required>
         <button type="submit" class="btn-submit">Guardar contraseña</button>
@@ -2081,6 +2131,7 @@
       <button type="button" data-vista="voluntarios" onclick="navegar('voluntarios')" title="Lista de voluntarios activos, reservas e historial">📋 Voluntarios <span class="nav-count" id="navCountVoluntarios">0</span></button>
       <button type="button" data-vista="disponibilidad" onclick="navegar('disponibilidad')" title="Camas libres por fecha y género">🛏️ Camas</button>
       <button type="button" data-vista="candidatos" onclick="navegar('candidatos')" title="Proceso de selección antes de que lleguen">🤝 Candidatos <span class="nav-count" id="navCountCandidatos">0</span></button>
+      <button type="button" data-vista="horarios" onclick="navegar('horarios')" title="Turnos de la semana y tareas">🕒 Horarios y tareas</button>
       <button type="button" data-vista="perfiles" onclick="navegar('perfiles')" title="Áreas de voluntariado">🏷️ Perfiles <span class="nav-count" id="navCountPerfiles">0</span></button>
     </nav>
 
@@ -2565,7 +2616,7 @@
         <!-- SECCIÓN: CALENDARIO -->
         <section class="vista" id="vista-calendario">
         <h2 class="section-heading"><span>📅</span> Calendario de estancias</h2>
-        <p class="view-desc">Cada fila es un voluntario y cada barra su estancia en el mes. Haz clic en un nombre o barra para ver la ficha.</p>
+        <p class="view-desc">Agrupado por área: la fila de cada área muestra cuántos voluntarios hay cada día. Quien tiene varias áreas aparece en cada una. Haz clic en un nombre o barra para ver la ficha.</p>
         <div class="calendar-container">
           <div class="cal-header-bar">
             <div class="cal-title-section">
@@ -2575,6 +2626,10 @@
               <button class="btn-cal-nav" onclick="cambiarMesRelativo(-1)">◀ Mes Anterior</button>
               <button class="btn-cal-nav" onclick="irAlMesActual()">Hoy</button>
               <button class="btn-cal-nav" onclick="cambiarMesRelativo(1)">Siguiente Mes ▶</button>
+            </div>
+            <div class="cal-controls">
+              <button class="chip active" id="calBtnArea" onclick="cambiarVistaCalendario(true)">Por área</button>
+              <button class="chip" id="calBtnTodos" onclick="cambiarVistaCalendario(false)">Todos</button>
             </div>
           </div>
 
@@ -2679,6 +2734,105 @@
           <div class="perfiles-grid" id="perfilesGrid"></div>
         </section>
 
+        <!-- SECCIÓN: HORARIOS Y TAREAS (admin) -->
+        <section class="vista" id="vista-horarios">
+          <h2 class="section-heading"><span>🕒</span> Horarios y tareas</h2>
+          <p class="view-desc">Arma los turnos de cada semana por área. Los voluntarios ven su horario y el del equipo en su portal.</p>
+
+          <div class="panel">
+            <h3>Agregar turno</h3>
+            <div class="fila-campos">
+              <div class="disp-field" style="min-width:200px; flex:1;">
+                <label for="hVoluntario">Voluntario</label>
+                <select id="hVoluntario" onchange="sugerirAreaTurno()"></select>
+              </div>
+              <div class="disp-field" style="min-width:150px;">
+                <label for="hArea">Área</label>
+                <select id="hArea"></select>
+              </div>
+              <div class="disp-field">
+                <label for="hInicio">Desde</label>
+                <input type="time" id="hInicio" value="07:00">
+              </div>
+              <div class="disp-field">
+                <label for="hFin">Hasta</label>
+                <input type="time" id="hFin" value="13:00">
+              </div>
+            </div>
+            <div class="fila-campos" style="margin-top:12px;">
+              <div class="disp-field">
+                <label>Días de esta semana</label>
+                <div class="dias-check" id="hDias"></div>
+              </div>
+              <div class="disp-field" style="flex:1; min-width:180px;">
+                <label for="hNota">Nota (opcional)</label>
+                <input type="text" id="hNota" maxlength="80" placeholder="Ej: turno de apertura">
+              </div>
+              <button type="button" class="btn-submit" onclick="agregarTurnos()">＋ Agregar turno</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="semana-nav">
+              <span class="semana-titulo" id="hSemanaTitulo">Semana</span>
+              <button class="btn-cal-nav" onclick="moverSemana(-1)">◀ Anterior</button>
+              <button class="btn-cal-nav" onclick="moverSemana(0)">Esta semana</button>
+              <button class="btn-cal-nav" onclick="moverSemana(1)">Siguiente ▶</button>
+              <button class="btn-cal-nav" onclick="copiarSemanaAnterior()" title="Copia los turnos de la semana anterior a esta">⧉ Copiar semana anterior</button>
+            </div>
+            <div class="horario-scroll" id="hGrid"></div>
+          </div>
+
+          <div class="panel">
+            <h3>Tareas</h3>
+            <div class="fila-campos">
+              <div class="disp-field" style="min-width:200px;">
+                <label for="tVoluntario">Voluntario</label>
+                <select id="tVoluntario"></select>
+              </div>
+              <div class="disp-field" style="flex:1; min-width:220px;">
+                <label for="tTitulo">Tarea</label>
+                <input type="text" id="tTitulo" maxlength="140" placeholder="Ej: Pintar la baranda del segundo piso">
+              </div>
+              <div class="disp-field">
+                <label for="tFecha">Para el día (opcional)</label>
+                <input type="date" id="tFecha">
+              </div>
+              <button type="button" class="btn-submit" onclick="agregarTarea()">＋ Asignar</button>
+            </div>
+            <div class="disp-chips" style="margin:14px 0 4px;">
+              <button class="chip active" id="tFiltroPend" onclick="filtrarTareas(false)">Pendientes</button>
+              <button class="chip" id="tFiltroTodas" onclick="filtrarTareas(true)">Todas</button>
+            </div>
+            <ul class="tareas-lista" id="tLista"></ul>
+          </div>
+        </section>
+
+        <!-- SECCIÓN: PORTAL DEL VOLUNTARIO -->
+        <section class="vista" id="vista-portal">
+          <h2 class="section-heading"><span>👋</span> <span id="pSaludo">Hola</span></h2>
+          <div class="portal-grid">
+            <div class="panel">
+              <h3>Mi información</h3>
+              <div id="pDatos"><div class="vacio">Cargando…</div></div>
+            </div>
+            <div class="panel">
+              <h3>Mis tareas</h3>
+              <ul class="tareas-lista" id="pTareas"></ul>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="semana-nav">
+              <span class="semana-titulo" id="pSemanaTitulo">Horario del equipo</span>
+              <button class="btn-cal-nav" onclick="moverSemanaPortal(-1)">◀ Anterior</button>
+              <button class="btn-cal-nav" onclick="moverSemanaPortal(0)">Esta semana</button>
+              <button class="btn-cal-nav" onclick="moverSemanaPortal(1)">Siguiente ▶</button>
+            </div>
+            <p class="view-desc" style="margin-top:0;">Tus turnos aparecen resaltados en naranja.</p>
+            <div class="horario-scroll" id="pGrid"></div>
+          </div>
+        </section>
+
       </div>
 
     </div>
@@ -2731,6 +2885,7 @@
 
       <span class="modal-label">Notas del voluntario</span>
       <div class="modal-notes-box" id="mNotas"></div>
+      <div class="modal-acciones" id="mAcciones"></div>
     </div>
   </div>
 
@@ -2868,8 +3023,36 @@
     let candidatos = [];
 
     // ===== NAVEGACIÓN ENTRE HERRAMIENTAS =====
-    const VISTAS = ['inicio', 'candidatos', 'registro', 'voluntarios', 'disponibilidad', 'calendario', 'perfiles'];
+    const VISTAS = ['inicio', 'candidatos', 'registro', 'voluntarios', 'disponibilidad', 'calendario', 'perfiles', 'horarios', 'portal'];
     const VISTA_INICIAL = 'inicio';
+
+    // ===== ROLES =====
+    // usuarioActual = { id, correo, nombre, rol, voluntario_id }  rol: 'admin' | 'recepcion' | 'voluntario'
+    let usuarioActual = null;
+    const VISTAS_POR_ROL = {
+      admin: ['inicio', 'candidatos', 'registro', 'voluntarios', 'disponibilidad', 'calendario', 'perfiles', 'horarios'],
+      recepcion: ['registro', 'calendario'],
+      voluntario: ['portal']
+    };
+    const VISTA_INICIAL_POR_ROL = { admin: 'inicio', recepcion: 'calendario', voluntario: 'portal' };
+    const NOMBRE_ROL = { admin: 'Admin', recepcion: 'Recepción', voluntario: 'Voluntario' };
+
+    function rolActual() { return usuarioActual ? usuarioActual.rol : null; }
+    function esAdmin() { return rolActual() === 'admin'; }
+
+    function vistasPermitidas() { return VISTAS_POR_ROL[rolActual()] || VISTAS; }
+
+    function aplicarRol() {
+      const rol = rolActual();
+      document.body.dataset.rol = rol || '';
+      const permitidas = vistasPermitidas();
+      document.querySelectorAll('#toolNav button').forEach(btn => {
+        btn.style.display = permitidas.includes(btn.dataset.vista) ? '' : 'none';
+      });
+      const titulo = document.querySelector('.page-title');
+      if (titulo) titulo.textContent = rol === 'voluntario' ? 'Portal del Voluntario' : 'Gestor de Voluntarios';
+      mostrarVista(location.hash.slice(1));
+    }
 
     function navegar(vista) {
       if (location.hash.slice(1) === vista) {
@@ -2880,7 +3063,10 @@
     }
 
     function mostrarVista(vista) {
-      if (!VISTAS.includes(vista)) vista = VISTA_INICIAL;
+      const permitidas = vistasPermitidas();
+      if (!VISTAS.includes(vista) || !permitidas.includes(vista)) {
+        vista = VISTA_INICIAL_POR_ROL[rolActual()] || VISTA_INICIAL;
+      }
       document.querySelectorAll('.vista').forEach(sec => {
         sec.classList.toggle('activa', sec.id === 'vista-' + vista);
       });
@@ -2892,6 +3078,8 @@
       if (vista === 'perfiles') renderizarPerfiles();
       if (vista === 'candidatos') renderizarCandidatos();
       if (vista === 'inicio') renderizarInicio();
+      if (vista === 'horarios' && esAdmin()) { prepararFormularioHorarios(); cargarHorariosAdmin(); }
+      if (vista === 'portal' && rolActual() === 'voluntario') renderizarPortal();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2904,11 +3092,26 @@
     }
 
     // ===== PERFILES DE VOLUNTARIADO =====
-    const PERFILES_BASE = [
-      { nombre: 'Recepción', icono: '🛎️' },
-      { nombre: 'Aseo', icono: '🧹' },
-      { nombre: 'Mantenimiento', icono: '🔧' }
-    ];
+    // Áreas compartidas: vienen de la tabla "perfiles" de Supabase
+    let perfilesDB = [];
+    let perfilesSeleccionados = []; // perfiles marcados en el formulario de registro
+
+    async function cargarPerfilesDB() {
+      const { data, error } = await supabaseClient.from('perfiles').select('nombre, icono, orden').order('orden');
+      if (!error && data) perfilesDB = data;
+    }
+
+    function perfilesDe(v) {
+      return Array.isArray(v?.perfiles) ? v.perfiles : (v?.perfil ? [v.perfil] : []);
+    }
+
+    function tienePerfil(v, nombre) {
+      return perfilesDe(v).some(p => normalizarTexto(p) === normalizarTexto(nombre));
+    }
+
+    function badgesPerfiles(v) {
+      return perfilesDe(v).map(badgePerfil).join('');
+    }
     let filtroPerfilTabla = 'Todos';
 
     function leerListaLocal(clave) {
@@ -2930,8 +3133,6 @@
 
     // Lista final = perfiles base (no ocultos) + creados + los que ya existan en la base de datos
     function obtenerPerfiles() {
-      const ocultos = leerListaLocal('kiwi_perfiles_ocultos').map(normalizarTexto);
-      const creados = leerListaLocal('kiwi_perfiles');
       const lista = [];
       const vistos = new Set();
 
@@ -2942,9 +3143,8 @@
         lista.push({ nombre: p.nombre.trim(), icono: p.icono || '🏷️' });
       };
 
-      PERFILES_BASE.filter(p => !ocultos.includes(normalizarTexto(p.nombre))).forEach(agregar);
-      creados.forEach(agregar);
-      voluntarios.forEach(v => { if (v.perfil) agregar({ nombre: v.perfil, icono: '🏷️' }); });
+      perfilesDB.forEach(agregar);
+      voluntarios.forEach(v => perfilesDe(v).forEach(n => agregar({ nombre: n, icono: '🏷️' })));
       candidatos.forEach(c => { if (c.perfil) agregar({ nombre: c.perfil, icono: '🏷️' }); });
       return lista;
     }
@@ -2966,89 +3166,79 @@
       return `<span class="perfil-badge" style="background:hsla(${h},45%,30%,0.45); color:hsl(${h},85%,78%); border:1px solid hsla(${h},50%,50%,0.4);">${iconoPerfil(nombre)} ${escaparHTML(nombre)}</span>`;
     }
 
-    function agregarPerfil(nombre, icono) {
+    async function agregarPerfil(nombre, icono) {
       const limpio = String(nombre || '').replace(/[\[\]]/g, '').trim();
-      if (!limpio) {
-        alert('Escribe un nombre para el perfil.');
-        return null;
-      }
-      if (limpio.length > 30) {
-        alert('El nombre del perfil puede tener máximo 30 caracteres.');
-        return null;
-      }
-      const existente = obtenerPerfiles().find(p => normalizarTexto(p.nombre) === normalizarTexto(limpio));
-      if (existente) {
-        alert(`El perfil "${existente.nombre}" ya existe.`);
-        return existente.nombre;
-      }
-
-      // Si era un perfil base que se había ocultado, se vuelve a mostrar
-      const ocultos = leerListaLocal('kiwi_perfiles_ocultos');
-      const sinOcultar = ocultos.filter(n => normalizarTexto(n) !== normalizarTexto(limpio));
-      if (sinOcultar.length !== ocultos.length) {
-        guardarListaLocal('kiwi_perfiles_ocultos', sinOcultar);
-      } else {
-        const creados = leerListaLocal('kiwi_perfiles');
-        creados.push({ nombre: limpio, icono: icono || '🏷️' });
-        guardarListaLocal('kiwi_perfiles', creados);
-      }
-
+      if (!limpio) { alert('Escribe un nombre para el perfil.'); return null; }
+      if (limpio.length > 30) { alert('El nombre del perfil puede tener máximo 30 caracteres.'); return null; }
+      const existente = perfilesDB.find(p => normalizarTexto(p.nombre) === normalizarTexto(limpio));
+      if (existente) { alert(`El perfil "${existente.nombre}" ya existe.`); return existente.nombre; }
+      const orden = perfilesDB.reduce((m, p) => Math.max(m, p.orden || 0), 0) + 1;
+      const { error } = await supabaseClient.from('perfiles').insert({ nombre: limpio, icono: icono || '🏷️', orden });
+      if (error) { mostrarErrorSupabase('No se pudo crear el perfil', error); return null; }
+      await cargarPerfilesDB();
       refrescarPerfilesUI();
       return limpio;
     }
 
-    function eliminarPerfil(nombre) {
-      const enUso = voluntarios.filter(v => normalizarTexto(v.perfil) === normalizarTexto(nombre)).length;
+    async function eliminarPerfil(nombre) {
+      const enUso = voluntarios.filter(v => tienePerfil(v, nombre)).length;
       const enCandidatos = candidatos.filter(c => normalizarTexto(c.perfil) === normalizarTexto(nombre)).length;
       if (enUso > 0 || enCandidatos > 0) {
-        alert(`No se puede eliminar "${nombre}": está asignado a ${enUso} voluntario(s) y ${enCandidatos} candidato(s).\nCámbiales el perfil primero.`);
+        alert(`No se puede eliminar "${nombre}": está asignado a ${enUso} voluntario(s) y ${enCandidatos} candidato(s).\nQuítaselo primero.`);
         return;
       }
       if (!confirm(`¿Eliminar el perfil "${nombre}"?`)) return;
-
-      const creados = leerListaLocal('kiwi_perfiles');
-      const restantes = creados.filter(p => normalizarTexto(p.nombre) !== normalizarTexto(nombre));
-      if (restantes.length !== creados.length) {
-        guardarListaLocal('kiwi_perfiles', restantes);
-      }
-      if (PERFILES_BASE.some(p => normalizarTexto(p.nombre) === normalizarTexto(nombre))) {
-        const ocultos = leerListaLocal('kiwi_perfiles_ocultos');
-        ocultos.push(nombre);
-        guardarListaLocal('kiwi_perfiles_ocultos', ocultos);
-      }
+      const { error } = await supabaseClient.from('perfiles').delete().eq('nombre', nombre);
+      if (error) { mostrarErrorSupabase('No se pudo eliminar el perfil', error); return; }
       if (normalizarTexto(filtroPerfilTabla) === normalizarTexto(nombre)) filtroPerfilTabla = 'Todos';
+      await cargarPerfilesDB();
       refrescarPerfilesUI();
     }
 
-    function crearPerfilDesdeVista() {
+    async function crearPerfilDesdeVista() {
       const input = document.getElementById('nuevoPerfilNombre');
       const icono = document.getElementById('nuevoPerfilIcono').value;
-      const creado = agregarPerfil(input.value, icono);
+      const creado = await agregarPerfil(input.value, icono);
       if (creado) input.value = '';
     }
 
-    function crearPerfilRapido() {
+    async function crearPerfilRapido() {
       const nombre = prompt('Nombre del nuevo perfil (ej: Cocina, Bar, Redes sociales):');
       if (nombre === null) return;
-      const creado = agregarPerfil(nombre, '🏷️');
+      const creado = await agregarPerfil(nombre, '🏷️');
       if (creado) seleccionarPerfilFormulario(creado);
     }
 
+    // Un voluntario puede tener varios perfiles: cada clic marca o desmarca
     function seleccionarPerfilFormulario(nombre) {
-      document.getElementById('perfil').value = nombre || '';
+      if (!nombre) {
+        perfilesSeleccionados = [];
+      } else if (perfilesSeleccionados.some(p => normalizarTexto(p) === normalizarTexto(nombre))) {
+        perfilesSeleccionados = perfilesSeleccionados.filter(p => normalizarTexto(p) !== normalizarTexto(nombre));
+      } else {
+        perfilesSeleccionados = [...perfilesSeleccionados, nombre];
+      }
+      document.getElementById('perfil').value = perfilesSeleccionados.join(', ');
+      renderizarChipsPerfilFormulario();
+    }
+
+    function fijarPerfilesFormulario(lista) {
+      perfilesSeleccionados = [...(lista || [])];
+      document.getElementById('perfil').value = perfilesSeleccionados.join(', ');
       renderizarChipsPerfilFormulario();
     }
 
     function renderizarChipsPerfilFormulario() {
       const cont = document.getElementById('perfilChips');
       if (!cont) return;
-      const actual = document.getElementById('perfil').value;
-      let html = `<button type="button" class="chip ${!actual ? 'active' : ''}" data-perfil="" onclick="seleccionarPerfilFormulario(this.dataset.perfil)">Sin perfil</button>`;
+      const actual = perfilesSeleccionados;
+      let html = `<button type="button" class="chip ${!actual.length ? 'active' : ''}" data-perfil="" onclick="seleccionarPerfilFormulario(this.dataset.perfil)">Sin perfil</button>`;
       obtenerPerfiles().forEach(p => {
-        const activo = normalizarTexto(p.nombre) === normalizarTexto(actual);
+        const activo = actual.some(a => normalizarTexto(a) === normalizarTexto(p.nombre));
         html += `<button type="button" class="chip ${activo ? 'active' : ''}" data-perfil="${escaparHTML(p.nombre)}" onclick="seleccionarPerfilFormulario(this.dataset.perfil)">${p.icono} ${escaparHTML(p.nombre)}</button>`;
       });
-      html += `<button type="button" class="chip chip-nuevo" onclick="crearPerfilRapido()">＋ Nuevo perfil</button>`;
+      if (esAdmin()) html += `<button type="button" class="chip chip-nuevo" onclick="crearPerfilRapido()">＋ Nuevo perfil</button>`;
+      html += `<div class="perfil-ayuda">Puedes marcar varios.</div>`;
       cont.innerHTML = html;
     }
 
@@ -3063,11 +3253,11 @@
       const contar = (fn) => base.filter(fn).length;
       let html = `<button type="button" class="chip ${filtroPerfilTabla === 'Todos' ? 'active' : ''}" data-perfil="Todos" onclick="cambiarFiltroPerfilTabla(this.dataset.perfil)">Todos los perfiles <span class="tab-count">${base.length}</span></button>`;
       obtenerPerfiles().forEach(p => {
-        const n = contar(v => normalizarTexto(v.perfil) === normalizarTexto(p.nombre));
+        const n = contar(v => tienePerfil(v, p.nombre));
         const activo = normalizarTexto(filtroPerfilTabla) === normalizarTexto(p.nombre);
         html += `<button type="button" class="chip ${activo ? 'active' : ''}" data-perfil="${escaparHTML(p.nombre)}" onclick="cambiarFiltroPerfilTabla(this.dataset.perfil)">${p.icono} ${escaparHTML(p.nombre)} <span class="tab-count">${n}</span></button>`;
       });
-      const sinPerfil = contar(v => !v.perfil);
+      const sinPerfil = contar(v => !perfilesDe(v).length);
       if (sinPerfil > 0) {
         html += `<button type="button" class="chip ${filtroPerfilTabla === '__sin__' ? 'active' : ''}" data-perfil="__sin__" onclick="cambiarFiltroPerfilTabla(this.dataset.perfil)">Sin perfil <span class="tab-count">${sinPerfil}</span></button>`;
       }
@@ -3076,8 +3266,8 @@
 
     function filtrarPorPerfil(lista) {
       if (filtroPerfilTabla === 'Todos') return lista;
-      if (filtroPerfilTabla === '__sin__') return lista.filter(v => !v.perfil);
-      return lista.filter(v => normalizarTexto(v.perfil) === normalizarTexto(filtroPerfilTabla));
+      if (filtroPerfilTabla === '__sin__') return lista.filter(v => !perfilesDe(v).length);
+      return lista.filter(v => tienePerfil(v, filtroPerfilTabla));
     }
 
     function estaEnCasaHoy(v) {
@@ -3100,7 +3290,7 @@
       grid.innerHTML = '';
 
       const tarjetas = obtenerPerfiles().map(p => ({ ...p, sinPerfil: false }));
-      if (voluntarios.some(v => !v.perfil && !v.esCheckout)) {
+      if (voluntarios.some(v => !perfilesDe(v).length && !v.esCheckout)) {
         tarjetas.push({ nombre: 'Sin perfil', icono: '❔', sinPerfil: true });
       }
 
@@ -3110,7 +3300,7 @@
       }
 
       tarjetas.forEach(p => {
-        const delPerfil = voluntarios.filter(v => p.sinPerfil ? !v.perfil : normalizarTexto(v.perfil) === normalizarTexto(p.nombre));
+        const delPerfil = voluntarios.filter(v => p.sinPerfil ? !perfilesDe(v).length : tienePerfil(v, p.nombre));
         const enCasa = delPerfil.filter(estaEnCasaHoy);
         const activos = delPerfil.filter(v => !v.esCheckout);
         const historial = delPerfil.filter(v => v.esCheckout);
@@ -4240,13 +4430,14 @@
         esPreRegistro: esPre,
         esCheckout: !!matchCheckout,
         fechaCheckout: matchCheckout ? matchCheckout[1] : null,
-        perfil: matchPerfil ? matchPerfil[1].trim() : '',
+        perfiles: (Array.isArray(row.perfiles) && row.perfiles.length) ? row.perfiles : (matchPerfil ? [matchPerfil[1].trim()] : []),
+        get perfil() { return this.perfiles[0] || ''; },
         createdAt: row.created_at
       };
     }
 
     function voluntarioFrontendADb(v, esPre) {
-      const notasFinales = construirNotas(v.notas || '', esPre, v.fechaCheckout || null, v.perfil || '');
+      const notasFinales = construirNotas(v.notas || '', esPre, v.fechaCheckout || null, '');
 
       return {
         fecha_llegada: fechaVisualAISO(v.fechaLlegada),
@@ -4263,6 +4454,7 @@
         telefono: v.telefono || 'PENDIENTE',
         correo: v.correo || 'pendiente@kiwi.com',
         direccion: v.direccion || 'Pendiente',
+        perfiles: v.perfiles || [],
         notas: notasFinales || null
       };
     }
@@ -4336,13 +4528,21 @@
         (v.documento || '').toLowerCase().includes(query) ||
         (v.pais || '').toLowerCase().includes(query) ||
         (v.habitacion || '').toLowerCase().includes(query) ||
-        (v.perfil || '').toLowerCase().includes(query)
+        perfilesDe(v).join(' ').toLowerCase().includes(query)
       );
 
       renderizarTabla(filtrados);
     }
 
     // CALENDARIO
+    let calPorArea = true;
+    function cambiarVistaCalendario(porArea) {
+      calPorArea = porArea;
+      document.getElementById('calBtnArea').classList.toggle('active', porArea);
+      document.getElementById('calBtnTodos').classList.toggle('active', !porArea);
+      renderizarCalendario();
+    }
+
     function cambiarMesRelativo(delta) {
       fechaVistaCalendario.setMonth(fechaVistaCalendario.getMonth() + delta);
       renderizarCalendario();
@@ -4399,8 +4599,8 @@
       const inicioMes = new Date(year, month, 1, 0, 0, 0);
       const finMes = new Date(year, month, totalDias, 23, 59, 59);
 
-      voluntarios.forEach(v => {
-        if (!v.fechaLlegada) return;
+      const construirFila = (v) => {
+        if (!v.fechaLlegada) return null;
 
         const [dIn, mIn, yIn] = v.fechaLlegada.split('-').map(Number);
         const fechaIn = new Date(yIn, mIn - 1, dIn, 0, 0, 0);
@@ -4413,8 +4613,8 @@
           fechaOut = new Date(yOut, mOut - 1, dOut, 23, 59, 59);
         }
 
-        if (fechaOut && fechaOut < inicioMes) return;
-        if (fechaIn > finMes) return;
+        if (fechaOut && fechaOut < inicioMes) return null;
+        if (fechaIn > finMes) return null;
 
         const tr = document.createElement('tr');
         const habitacionClase = (v.habitacion || '').includes('Roble') ? 'roble' : 'bamboo';
@@ -4428,7 +4628,7 @@
             </div>
             <div class="cal-user-meta">
               <span>${iconoHab} ${escaparHTML(v.pais)}</span>
-              ${v.perfil ? `<span>•</span><span>${iconoPerfil(v.perfil)} ${escaparHTML(v.perfil)}</span>` : ''}
+              ${perfilesDe(v).length ? `<span>•</span><span>${perfilesDe(v).map(n => iconoPerfil(n) + ' ' + escaparHTML(n)).join(', ')}</span>` : ''}
               <span>•</span>
               <span>${v.fechaLlegada.slice(0, 5)} - ${salidaTexto}</span>
             </div>
@@ -4469,8 +4669,53 @@
         }
 
         tr.innerHTML = rowHtml;
-        calBody.appendChild(tr);
-      });
+        return tr;
+      };
+
+      // ¿Ocupa este voluntario el día indicado del mes?
+      const ocupaDiaCal = (v, dia) => {
+        if (!v.fechaLlegada) return false;
+        const [dIn, mIn, yIn] = v.fechaLlegada.split('-').map(Number);
+        const llegada = new Date(yIn, mIn - 1, dIn, 0, 0, 0);
+        const iniDia = new Date(year, month, dia, 0, 0, 0);
+        const finDia = new Date(year, month, dia, 23, 59, 59);
+        if (!v.fechaSalida) return llegada <= finDia;
+        const [dOut, mOut, yOut] = v.fechaSalida.split('-').map(Number);
+        return llegada <= finDia && new Date(yOut, mOut - 1, dOut, 23, 59, 59) >= iniDia;
+      };
+
+      const enElMes = voluntarios.filter(v => construirFila(v));
+
+      if (!calPorArea) {
+        enElMes.forEach(v => calBody.appendChild(construirFila(v)));
+      } else {
+        // Un grupo por área; quien tiene varios perfiles aparece en cada uno
+        const grupos = obtenerPerfiles().map(p => ({
+          nombre: p.nombre, icono: p.icono,
+          lista: enElMes.filter(v => tienePerfil(v, p.nombre))
+        }));
+        grupos.push({ nombre: 'Sin área asignada', icono: '❔', lista: enElMes.filter(v => !perfilesDe(v).length) });
+
+        grupos.filter(g => g.lista.length).forEach(g => {
+          const h = g.icono === '❔' ? 0 : tonoPerfil(g.nombre);
+          const enCasaHoy = esMesActual ? g.lista.filter(v => !v.esPreRegistro && ocupaDiaCal(v, diaHoy)).length : null;
+          let filaGrupo = `
+            <td class="cal-row-label cal-grupo-label" style="border-left:4px solid hsl(${h},70%,55%);">
+              <div class="cal-grupo-nombre">${g.icono} ${escaparHTML(g.nombre)}</div>
+              <div class="cal-user-meta">${g.lista.length} en el mes${enCasaHoy !== null ? ` · ${enCasaHoy} en casa hoy` : ''}</div>
+            </td>`;
+          for (let dia = 1; dia <= totalDias; dia++) {
+            const n = g.lista.filter(v => ocupaDiaCal(v, dia)).length;
+            const isToday = esMesActual && dia === diaHoy;
+            filaGrupo += `<td class="cal-cell cal-grupo-cell ${isToday ? 'is-today' : ''}" title="${n} voluntario(s) de ${escaparHTML(g.nombre)} el día ${dia}">${n || ''}</td>`;
+          }
+          const trG = document.createElement('tr');
+          trG.className = 'cal-grupo';
+          trG.innerHTML = filaGrupo;
+          calBody.appendChild(trG);
+          g.lista.forEach(v => calBody.appendChild(construirFila(v)));
+        });
+      }
 
       if (calBody.children.length === 0) {
         calBody.innerHTML = `
@@ -4584,7 +4829,7 @@
         correo: document.getElementById('correo').value.trim(),
         direccion: document.getElementById('direccion').value.trim(),
         notas: document.getElementById('notas').value.trim(),
-        perfil: document.getElementById('perfil').value,
+        perfiles: [...perfilesSeleccionados],
         fechaCheckout: editingId ? (voluntarios.find(x => x.id === Number(editingId))?.fechaCheckout || null) : null
       };
 
@@ -4662,7 +4907,7 @@
       document.getElementById('formTitleText').textContent = 'Nuevo Voluntario';
       document.getElementById('btnSubmitForm').innerHTML = '<span>✓</span> Guardar Voluntario';
       document.getElementById('btnCancelEdit').style.display = 'none';
-      seleccionarPerfilFormulario('');
+      fijarPerfilesFormulario([]);
       ocultarAvisoFormulario();
       actualizarHintHabitacion();
     }
@@ -4704,7 +4949,7 @@
         tr.innerHTML = `
           <td>${badgeEstadoHab}</td>
           <td>
-            <strong>${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)} ${escaparHTML(v.segundoApellido || '')}</strong>${badgePerfil(v.perfil)}
+            <strong>${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)} ${escaparHTML(v.segundoApellido || '')}</strong>${badgesPerfiles(v)}
             <div style="font-size:12px; color:var(--text-muted);">${escaparHTML(v.genero)} • ${escaparHTML(v.correo)}</div>
           </td>
           <td>
@@ -4722,7 +4967,7 @@
               ${botonCheckin}
               <button class="btn-icon btn-view" title="Ver ficha y notas" onclick="verFicha(${v.id})">🔍 Ver</button>
               <button class="btn-icon btn-edit" title="Editar" onclick="cargarEdicion(${v.id})">✏️ Editar</button>
-              <button class="btn-icon btn-delete" title="Eliminar definitivamente" onclick="eliminarVoluntario(${v.id})">🗑️</button>
+              <button class="btn-icon btn-delete solo-admin" title="Eliminar definitivamente" onclick="eliminarVoluntario(${v.id})">🗑️</button>
             </div>
           </td>
         `;
@@ -4880,7 +5125,7 @@
             const salida = salidaISO(v);
             const pill = salida ? pillDias(diasHasta(salida), 'Sale') : '<span class="pill-dias" style="background:#262626; color:var(--text-muted);">Sin fecha de salida</span>';
             return `<div class="fila-persona" onclick="verFicha(${v.id})" title="Ver ficha">
-              <span class="quien">${nombreCorto(v)}${v.perfil ? ' ' + badgePerfil(v.perfil) : ''}</span>${pill}</div>`;
+              <span class="quien">${nombreCorto(v)}${perfilesDe(v).length ? ' ' + badgesPerfiles(v) : ''}</span>${pill}</div>`;
           }).join('')
           : '<div class="kanban-vacio">Nadie en este dormitorio</div>';
         return `<div class="grupo-dorm">${h.icono} ${h.corto} · ${personas.length}/${cap}</div>${filas}`;
@@ -4920,7 +5165,8 @@
       document.getElementById('mContacto').textContent = `${v.telefono} | ${v.correo}`;
       document.getElementById('mDireccion').textContent = v.direccion;
       document.getElementById('mNotas').textContent = v.notas || 'Sin notas registradas.';
-      document.getElementById('mPerfil').innerHTML = v.perfil ? badgePerfil(v.perfil).replace('margin-left:6px;', '') : 'Sin perfil asignado';
+      document.getElementById('mPerfil').innerHTML = perfilesDe(v).length ? badgesPerfiles(v) : 'Sin perfil asignado';
+      renderizarAccionesFicha(v);
       document.getElementById('mCheckoutBox').style.display = v.esCheckout ? 'flex' : 'none';
       document.getElementById('mCheckout').textContent = v.fechaCheckout || '';
       if (v.esCheckout) {
@@ -4982,7 +5228,7 @@
         document.getElementById('pickerNacimiento').value = '';
       }
       document.getElementById('notas').value = v.notas || '';
-      seleccionarPerfilFormulario(v.perfil || '');
+      fijarPerfilesFormulario(perfilesDe(v));
 
       document.getElementById('formTitleIcon').textContent = '✏️';
       document.getElementById('formTitleText').textContent = 'Editar Voluntario';
@@ -5033,7 +5279,7 @@
         .from(TABLA_VOLUNTARIOS)
         .update({
           fecha_salida: nuevaSalidaISO,
-          notas: construirNotas(v.notas, v.esPreRegistro, hoyVisual, v.perfil)
+          notas: construirNotas(v.notas, v.esPreRegistro, hoyVisual, '')
         })
         .eq('id', id);
 
@@ -5053,7 +5299,7 @@
 
       const { error } = await supabaseClient
         .from(TABLA_VOLUNTARIOS)
-        .update({ notas: construirNotas(v.notas, v.esPreRegistro, null, v.perfil) })
+        .update({ notas: construirNotas(v.notas, v.esPreRegistro, null, '') })
         .eq('id', id);
 
       if (error) {
@@ -5124,11 +5370,335 @@
     renderizarChipsPerfilFormulario();
     mostrarVista(location.hash.slice(1) || VISTA_INICIAL);
 
+    // ===== FICHA: BOTONES SEGÚN EL ROL =====
+    function renderizarAccionesFicha(v) {
+      const cont = document.getElementById('mAcciones');
+      if (!cont) return;
+      if (rolActual() === 'voluntario') { cont.innerHTML = ''; return; }
+      let html = `<button class="btn-icon btn-edit" onclick="cerrarModal(); cargarEdicion(${v.id})">✏️ Editar</button>`;
+      if (v.esCheckout) {
+        html += `<button class="btn-icon btn-revertir" onclick="cerrarModal(); revertirCheckOut(${v.id})">↩️ Revertir check-out</button>`;
+      } else if (v.esPreRegistro) {
+        html += `<button class="btn-icon btn-checkin" onclick="cerrarModal(); hacerCheckInDirecto(${v.id})">🛎️ Check-in</button>`;
+      } else {
+        html += `<button class="btn-icon btn-checkout" onclick="cerrarModal(); hacerCheckOut(${v.id})">🧳 Check-out</button>`;
+      }
+      if (esAdmin()) {
+        html += `<button class="btn-icon btn-view" onclick="invitarVoluntario(${v.id})" title="Le llega un correo para crear su contraseña y ver su horario y tareas">📧 Invitar al portal</button>`;
+        html += `<button class="btn-icon btn-delete" onclick="cerrarModal(); eliminarVoluntario(${v.id})">🗑️ Eliminar</button>`;
+      }
+      cont.innerHTML = html;
+    }
+
+    function correoValido(c) {
+      const x = String(c || '').trim().toLowerCase();
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x) && x !== 'pendiente@kiwi.com' ? x : null;
+    }
+
+    async function invitarVoluntario(id) {
+      const v = voluntarios.find(x => x.id === id);
+      if (!v) return;
+      const correo = correoValido(v.correo);
+      if (!correo) { alert('Este voluntario no tiene un correo válido. Edítalo y agrega su correo para invitarlo.'); return; }
+      if (!confirm(`¿Enviar la invitación al portal a ${correo}?\n\nLe llegará un correo para entrar y crear su contraseña. Verá solo su información, sus tareas y el horario del equipo.`)) return;
+
+      const { error: errInv } = await supabaseClient.from('invitaciones').upsert({ correo, voluntario_id: id });
+      if (errInv) { mostrarErrorSupabase('No se pudo crear la invitación', errInv); return; }
+
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email: correo,
+        options: { shouldCreateUser: true, emailRedirectTo: location.origin + location.pathname }
+      });
+      if (error) {
+        if (/not authorized|not allowed/i.test(error.message || '')) {
+          toast('⚠️ La invitación quedó guardada, pero Supabase no pudo enviar el correo: falta conectar un correo propio (SMTP) en Supabase.', 'error', 12000);
+        } else if (/rate limit|seconds/i.test(error.message || '')) {
+          toast('⚠️ Se enviaron demasiados correos seguidos. Intenta de nuevo en unos minutos.', 'error', 10000);
+        } else {
+          mostrarErrorSupabase('No se pudo enviar el correo de invitación', error);
+        }
+        return;
+      }
+      toast(`📧 Invitación enviada a ${correo}`, 'ok', 6000);
+    }
+
+    // ===== HORARIOS SEMANALES =====
+    const DIAS_CORTOS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+    function lunesDe(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      const f = new Date(y, m - 1, d);
+      f.setDate(f.getDate() - ((f.getDay() + 6) % 7));
+      return isoDeFecha(f);
+    }
+
+    function etiquetaDia(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return `${d} ${MESES_CORTOS[m - 1]}`;
+    }
+
+    function tituloSemana(lunes) {
+      return `Semana del ${etiquetaDia(lunes)} al ${etiquetaDia(sumarDiasISO(lunes, 6))}`;
+    }
+
+    const horaCorta = (t) => String(t || '').slice(0, 5);
+
+    async function leerHorarios(lunes) {
+      const { data, error } = await supabaseClient.rpc('horarios_equipo', { desde: lunes, hasta: sumarDiasISO(lunes, 6) });
+      if (error) { mostrarErrorSupabase('No se pudieron cargar los horarios', error); return []; }
+      return data || [];
+    }
+
+    // Tabla semana: filas = áreas, columnas = días
+    function htmlGridHorarios(lunes, turnos, { editable = false, resaltarId = null } = {}) {
+      const dias = [...Array(7)].map((_, i) => sumarDiasISO(lunes, i));
+      const hoy = isoHoy();
+      const areas = obtenerPerfiles().map(p => ({ nombre: p.nombre, icono: p.icono }));
+      turnos.forEach(t => {
+        if (!areas.some(a => normalizarTexto(a.nombre) === normalizarTexto(t.area))) areas.push({ nombre: t.area, icono: '🏷️' });
+      });
+      let html = `<table class="horario-tabla"><thead><tr><th>Área</th>`;
+      dias.forEach((d, i) => { html += `<th class="${d === hoy ? 'es-hoy' : ''}">${DIAS_CORTOS[i]}<br>${etiquetaDia(d)}</th>`; });
+      html += `</tr></thead><tbody>`;
+      const areasConTurnos = editable ? areas : areas.filter(a => turnos.some(t => normalizarTexto(t.area) === normalizarTexto(a.nombre)));
+      if (!areasConTurnos.length) {
+        return `<div class="vacio">Todavía no hay turnos asignados para esta semana.</div>`;
+      }
+      areasConTurnos.forEach(a => {
+        html += `<tr><td class="area">${a.icono} ${escaparHTML(a.nombre)}</td>`;
+        dias.forEach(d => {
+          const delDia = turnos.filter(t => t.fecha === d && normalizarTexto(t.area) === normalizarTexto(a.nombre));
+          html += `<td>${delDia.map(t => `
+            <span class="turno ${resaltarId && t.voluntario_id === resaltarId ? 'mio' : ''}">
+              ${editable ? `<button class="quitar" title="Quitar turno" onclick="quitarTurno(${t.id})">×</button>` : ''}
+              ${escaparHTML(t.nombre)}
+              <small>${horaCorta(t.hora_inicio)}–${horaCorta(t.hora_fin)}${t.nota ? ' · ' + escaparHTML(t.nota) : ''}</small>
+            </span>`).join('')}</td>`;
+        });
+        html += `</tr>`;
+      });
+      return html + `</tbody></table>`;
+    }
+
+    let semanaAdmin = lunesDe(isoHoy());
+    let turnosAdmin = [];
+
+    // Voluntarios que están (o llegarán) durante la semana elegida
+    function voluntariosDeLaSemana(lunes) {
+      const domingo = sumarDiasISO(lunes, 6);
+      const lista = voluntarios.filter(v => {
+        if (v.esCheckout || !v.fechaLlegada) return false;
+        const llegada = fechaVisualAISO(v.fechaLlegada);
+        const salida = v.fechaSalida ? fechaVisualAISO(v.fechaSalida) : null;
+        return llegada <= domingo && (!salida || salida >= lunes);
+      });
+      return lista.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    }
+
+    function prepararFormularioHorarios() {
+      const lista = voluntariosDeLaSemana(semanaAdmin);
+      const opciones = lista.length
+        ? lista.map(v => `<option value="${v.id}">${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)}${perfilesDe(v).length ? ' · ' + escaparHTML(perfilesDe(v).join(', ')) : ''}</option>`).join('')
+        : '<option value="">No hay voluntarios esta semana</option>';
+      const selH = document.getElementById('hVoluntario');
+      const selT = document.getElementById('tVoluntario');
+      const prevH = selH.value, prevT = selT.value;
+      selH.innerHTML = opciones;
+      selT.innerHTML = voluntarios.filter(v => !v.esCheckout).sort((a, b) => a.nombre.localeCompare(b.nombre))
+        .map(v => `<option value="${v.id}">${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)}</option>`).join('');
+      if (prevH && selH.querySelector(`option[value="${prevH}"]`)) selH.value = prevH;
+      if (prevT && selT.querySelector(`option[value="${prevT}"]`)) selT.value = prevT;
+
+      const selA = document.getElementById('hArea');
+      const prevA = selA.value;
+      selA.innerHTML = obtenerPerfiles().map(p => `<option value="${escaparHTML(p.nombre)}">${p.icono} ${escaparHTML(p.nombre)}</option>`).join('');
+      if (prevA) selA.value = prevA; else sugerirAreaTurno();
+
+      const dias = document.getElementById('hDias');
+      if (!dias.dataset.semana || dias.dataset.semana !== semanaAdmin) {
+        dias.dataset.semana = semanaAdmin;
+        dias.innerHTML = DIAS_CORTOS.map((n, i) => `<label><input type="checkbox" value="${i}" ${i < 5 ? 'checked' : ''}> ${n} ${etiquetaDia(sumarDiasISO(semanaAdmin, i)).split(' ')[0]}</label>`).join('');
+      }
+      document.getElementById('hSemanaTitulo').textContent = tituloSemana(semanaAdmin);
+    }
+
+    function sugerirAreaTurno() {
+      const v = voluntarios.find(x => x.id === Number(document.getElementById('hVoluntario').value));
+      const selA = document.getElementById('hArea');
+      if (v && perfilesDe(v).length) selA.value = perfilesDe(v)[0];
+    }
+
+    async function cargarHorariosAdmin() {
+      if (!esAdmin()) return;
+      turnosAdmin = await leerHorarios(semanaAdmin);
+      document.getElementById('hGrid').innerHTML = htmlGridHorarios(semanaAdmin, turnosAdmin, { editable: true });
+      await cargarTareasAdmin();
+    }
+
+    function moverSemana(delta) {
+      semanaAdmin = delta === 0 ? lunesDe(isoHoy()) : sumarDiasISO(semanaAdmin, 7 * delta);
+      prepararFormularioHorarios();
+      cargarHorariosAdmin();
+    }
+
+    async function agregarTurnos() {
+      const voluntarioId = Number(document.getElementById('hVoluntario').value);
+      const area = document.getElementById('hArea').value;
+      const inicio = document.getElementById('hInicio').value;
+      const fin = document.getElementById('hFin').value;
+      const nota = document.getElementById('hNota').value.trim() || null;
+      const dias = [...document.querySelectorAll('#hDias input:checked')].map(c => Number(c.value));
+      if (!voluntarioId) { alert('Elige un voluntario.'); return; }
+      if (!area) { alert('Elige un área.'); return; }
+      if (!inicio || !fin) { alert('Escribe la hora de inicio y de fin.'); return; }
+      if (!dias.length) { alert('Marca al menos un día.'); return; }
+      const filas = dias.map(i => ({ voluntario_id: voluntarioId, fecha: sumarDiasISO(semanaAdmin, i), hora_inicio: inicio, hora_fin: fin, area, nota }));
+      const { error } = await supabaseClient.from('horarios').insert(filas);
+      if (error) { mostrarErrorSupabase('No se pudo guardar el turno', error); return; }
+      document.getElementById('hNota').value = '';
+      toast(`🕒 ${filas.length} turno(s) agregado(s)`, 'ok');
+      await cargarHorariosAdmin();
+    }
+
+    async function quitarTurno(id) {
+      if (!confirm('¿Quitar este turno?')) return;
+      const { error } = await supabaseClient.from('horarios').delete().eq('id', id);
+      if (error) { mostrarErrorSupabase('No se pudo quitar el turno', error); return; }
+      await cargarHorariosAdmin();
+    }
+
+    async function copiarSemanaAnterior() {
+      const anterior = await leerHorarios(sumarDiasISO(semanaAdmin, -7));
+      if (!anterior.length) { alert('La semana anterior no tiene turnos para copiar.'); return; }
+      // Solo se copian los turnos de quienes siguen en casa esta semana
+      const presentes = new Set(voluntariosDeLaSemana(semanaAdmin).map(v => v.id));
+      const copiables = anterior.filter(t => presentes.has(t.voluntario_id));
+      if (!copiables.length) { alert('Ninguno de los voluntarios de la semana anterior está esta semana.'); return; }
+      const aviso = turnosAdmin.length ? `\n\nOjo: esta semana ya tiene ${turnosAdmin.length} turno(s); se agregarán además de esos.` : '';
+      if (!confirm(`¿Copiar ${copiables.length} turno(s) de la semana anterior a esta?${aviso}`)) return;
+      const filas = copiables.map(t => ({ voluntario_id: t.voluntario_id, fecha: sumarDiasISO(t.fecha, 7), hora_inicio: t.hora_inicio, hora_fin: t.hora_fin, area: t.area, nota: t.nota }));
+      const { error } = await supabaseClient.from('horarios').insert(filas);
+      if (error) { mostrarErrorSupabase('No se pudieron copiar los turnos', error); return; }
+      toast(`⧉ ${filas.length} turno(s) copiados`, 'ok');
+      await cargarHorariosAdmin();
+    }
+
+    // ===== TAREAS =====
+    let tareasAdmin = [];
+    let verTodasTareas = false;
+
+    function htmlTarea(t, { mostrarQuien = false, borrar = false } = {}) {
+      const v = voluntarios.find(x => x.id === t.voluntario_id);
+      return `<li class="${t.hecha ? 'hecha' : ''}">
+        <input type="checkbox" ${t.hecha ? 'checked' : ''} onchange="marcarTarea(${t.id}, this.checked)" title="Marcar como hecha">
+        <div>
+          <div class="t-titulo">${escaparHTML(t.titulo)}</div>
+          <div class="t-meta">${mostrarQuien && v ? `<span class="t-quien">${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)}</span> · ` : ''}${t.fecha ? 'Para el ' + etiquetaDia(t.fecha) : 'Sin fecha'}${t.hecha && t.hecha_en ? ' · hecha ' + new Date(t.hecha_en).toLocaleDateString('es-CO') : ''}</div>
+        </div>
+        ${borrar ? `<button class="quitar" title="Eliminar tarea" onclick="eliminarTarea(${t.id})">🗑️</button>` : ''}
+      </li>`;
+    }
+
+    async function cargarTareasAdmin() {
+      const { data, error } = await supabaseClient.from('tareas').select('*').order('hecha').order('fecha', { nullsFirst: false }).order('creado_en', { ascending: false }).limit(300);
+      if (error) { mostrarErrorSupabase('No se pudieron cargar las tareas', error); return; }
+      tareasAdmin = data || [];
+      renderizarTareasAdmin();
+    }
+
+    function renderizarTareasAdmin() {
+      const lista = verTodasTareas ? tareasAdmin : tareasAdmin.filter(t => !t.hecha);
+      document.getElementById('tLista').innerHTML = lista.length
+        ? lista.map(t => htmlTarea(t, { mostrarQuien: true, borrar: true })).join('')
+        : `<li class="vacio">${verTodasTareas ? 'No hay tareas.' : 'No hay tareas pendientes.'}</li>`;
+    }
+
+    function filtrarTareas(todas) {
+      verTodasTareas = todas;
+      document.getElementById('tFiltroPend').classList.toggle('active', !todas);
+      document.getElementById('tFiltroTodas').classList.toggle('active', todas);
+      renderizarTareasAdmin();
+    }
+
+    async function agregarTarea() {
+      const voluntarioId = Number(document.getElementById('tVoluntario').value);
+      const titulo = document.getElementById('tTitulo').value.trim();
+      const fecha = document.getElementById('tFecha').value || null;
+      if (!voluntarioId) { alert('Elige un voluntario.'); return; }
+      if (!titulo) { alert('Escribe la tarea.'); return; }
+      const { error } = await supabaseClient.from('tareas').insert({ voluntario_id: voluntarioId, titulo, fecha });
+      if (error) { mostrarErrorSupabase('No se pudo asignar la tarea', error); return; }
+      document.getElementById('tTitulo').value = '';
+      toast('✅ Tarea asignada', 'ok');
+      await cargarTareasAdmin();
+    }
+
+    async function eliminarTarea(id) {
+      if (!confirm('¿Eliminar esta tarea?')) return;
+      const { error } = await supabaseClient.from('tareas').delete().eq('id', id);
+      if (error) { mostrarErrorSupabase('No se pudo eliminar la tarea', error); return; }
+      await cargarTareasAdmin();
+    }
+
+    async function marcarTarea(id, valor) {
+      const { error } = await supabaseClient.rpc('marcar_tarea', { tarea_id: id, valor });
+      if (error) { mostrarErrorSupabase('No se pudo actualizar la tarea', error); return; }
+      if (rolActual() === 'voluntario') await cargarPortal(); else await cargarTareasAdmin();
+    }
+
+    // ===== PORTAL DEL VOLUNTARIO =====
+    let semanaPortal = lunesDe(isoHoy());
+    let portal = { yo: null, tareas: [], turnos: [] };
+
+    async function cargarPortal() {
+      const [vRes, tRes, turnos] = await Promise.all([
+        supabaseClient.from(TABLA_VOLUNTARIOS).select('*').eq('id', usuarioActual.voluntario_id).maybeSingle(),
+        supabaseClient.from('tareas').select('*').order('hecha').order('fecha', { nullsFirst: false }).order('creado_en', { ascending: false }),
+        leerHorarios(semanaPortal)
+      ]);
+      if (vRes.error) { mostrarErrorSupabase('No se pudo cargar tu información', vRes.error); return; }
+      portal.yo = vRes.data ? filaDbAFrontend(vRes.data) : null;
+      portal.tareas = tRes.data || [];
+      portal.turnos = turnos;
+      renderizarPortal();
+    }
+
+    function renderizarPortal() {
+      const yo = portal.yo;
+      if (!yo) { document.getElementById('pDatos').innerHTML = '<div class="vacio">Cargando…</div>'; return; }
+      document.getElementById('pSaludo').textContent = `Hola, ${yo.nombre}`;
+      const dato = (k, val) => `<div class="dato"><span>${k}</span><span>${escaparHTML(val || '—')}</span></div>`;
+      document.getElementById('pDatos').innerHTML =
+        dato('Nombre', `${yo.nombre} ${yo.primerApellido} ${yo.segundoApellido || ''}`) +
+        dato('Llegada', yo.fechaLlegada) +
+        dato('Salida', yo.fechaSalida || 'Sin definir') +
+        dato('Habitación', yo.habitacion) +
+        `<div class="dato"><span>Áreas</span><span>${perfilesDe(yo).length ? badgesPerfiles(yo) : '—'}</span></div>` +
+        dato('País', yo.pais) +
+        dato('Documento', `${yo.tipoDocumento}: ${yo.documento}`) +
+        dato('Teléfono', yo.telefono) +
+        dato('Correo', yo.correo);
+
+      const pendientes = portal.tareas.filter(t => !t.hecha);
+      const hechas = portal.tareas.filter(t => t.hecha).slice(0, 10);
+      document.getElementById('pTareas').innerHTML = (pendientes.length || hechas.length)
+        ? [...pendientes, ...hechas].map(t => htmlTarea(t)).join('')
+        : '<li class="vacio">No tienes tareas asignadas por ahora.</li>';
+
+      document.getElementById('pSemanaTitulo').textContent = tituloSemana(semanaPortal);
+      document.getElementById('pGrid').innerHTML = htmlGridHorarios(semanaPortal, portal.turnos, { resaltarId: yo.id });
+    }
+
+    async function moverSemanaPortal(delta) {
+      semanaPortal = delta === 0 ? lunesDe(isoHoy()) : sumarDiasISO(semanaPortal, 7 * delta);
+      portal.turnos = await leerHorarios(semanaPortal);
+      renderizarPortal();
+    }
+
     // ===== INGRESO (Supabase Auth) =====
-    // usuarioActual = { id, correo, nombre, rol }  rol: 'admin' | 'recepcion' | 'voluntario'
-    let usuarioActual = null;
     let intervaloRecarga = null;
-    const ROLES_EQUIPO = ['admin', 'recepcion'];
+    const ROLES_VALIDOS = ['admin', 'recepcion', 'voluntario'];
     const loginOverlay = document.getElementById('loginOverlay');
     const loginMsg = document.getElementById('loginMsg');
 
@@ -5144,35 +5714,61 @@
       mensajeLogin(texto, tipo);
     }
 
+    async function leerMiUsuario(uid) {
+      return supabaseClient.from('usuarios').select('id, correo, nombre, rol, voluntario_id').eq('id', uid).maybeSingle();
+    }
+
     async function verificarAcceso(session) {
       if (!session) { mostrarLogin(); return; }
-      const { data, error } = await supabaseClient
-        .from('usuarios')
-        .select('id, correo, nombre, rol')
-        .eq('id', session.user.id)
-        .maybeSingle();
-      if (error || !data || !ROLES_EQUIPO.includes(data.rol)) {
+      let { data, error } = await leerMiUsuario(session.user.id);
+      if (!error && !data) {
+        // Puede ser un voluntario que entra por primera vez con su invitación
+        const vinc = await supabaseClient.rpc('vincular_invitacion');
+        if (!vinc.error && vinc.data) ({ data, error } = await leerMiUsuario(session.user.id));
+      }
+      if (error || !data || !ROLES_VALIDOS.includes(data.rol)) {
         await supabaseClient.auth.signOut();
         mostrarLogin(error
           ? 'No se pudo verificar tu usuario: ' + error.message
           : 'Tu usuario no tiene acceso al gestor. Pídele acceso al administrador.');
         return;
       }
+      // El voluntario que entra por la invitación crea su contraseña la primera vez
+      if (data.rol === 'voluntario' && !session.user.user_metadata?.clave_creada) {
+        mostrarCrearClave('Crea tu contraseña', `¡Bienvenido/a! Crea una contraseña para entrar la próxima vez con ${session.user.email}.`);
+        return;
+      }
       usuarioActual = data;
       document.getElementById('sesionUsuario').textContent =
-        `${data.nombre || data.correo} · ${data.rol === 'admin' ? 'Admin' : 'Recepción'}`;
+        `${data.nombre || data.correo} · ${NOMBRE_ROL[data.rol]}`;
       loginOverlay.style.display = 'none';
+      aplicarRol();
       iniciarApp();
     }
 
-    function iniciarApp() {
-      cargarVoluntarios().then(cargarCandidatos);
-      if (!intervaloRecarga) {
-        intervaloRecarga = setInterval(async () => {
-          await cargarVoluntarios();
-          await cargarCandidatos();
-        }, 30000);
+    function mostrarCrearClave(titulo, sub) {
+      loginOverlay.style.display = 'flex';
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('nuevaClaveForm').style.display = '';
+      document.getElementById('nuevaClaveTitulo').textContent = titulo;
+      document.getElementById('nuevaClaveSub').textContent = sub;
+      mensajeLogin('');
+    }
+
+    async function recargarDatos() {
+      if (rolActual() === 'voluntario') { await cargarPortal(); return; }
+      await cargarVoluntarios();
+      if (esAdmin()) {
+        await cargarCandidatos();
+        if (location.hash.slice(1) === 'horarios') { prepararFormularioHorarios(); await cargarHorariosAdmin(); }
       }
+    }
+
+    async function iniciarApp() {
+      await cargarPerfilesDB();
+      refrescarPerfilesUI();
+      await recargarDatos();
+      if (!intervaloRecarga) intervaloRecarga = setInterval(recargarDatos, 30000);
     }
 
     function detenerApp() {
@@ -5214,7 +5810,10 @@
 
     document.getElementById('nuevaClaveForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const { error } = await supabaseClient.auth.updateUser({ password: document.getElementById('nuevaClave').value });
+      const { error } = await supabaseClient.auth.updateUser({
+        password: document.getElementById('nuevaClave').value,
+        data: { clave_creada: true }
+      });
       if (error) { mensajeLogin('No se pudo cambiar: ' + error.message); return; }
       history.replaceState(null, '', location.pathname);
       const { data } = await supabaseClient.auth.getSession();
@@ -5223,10 +5822,7 @@
 
     supabaseClient.auth.onAuthStateChange((evento) => {
       if (evento === 'PASSWORD_RECOVERY') {
-        loginOverlay.style.display = 'flex';
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('nuevaClaveForm').style.display = '';
-        mensajeLogin('');
+        mostrarCrearClave('Nueva contraseña', 'Escribe tu nueva contraseña (mínimo 8 caracteres).');
       } else if (evento === 'SIGNED_OUT' && usuarioActual) {
         detenerApp();
         mostrarLogin('Tu sesión se cerró. Vuelve a ingresar.');
