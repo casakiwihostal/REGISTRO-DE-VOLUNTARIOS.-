@@ -2246,6 +2246,7 @@
     </header>
 
     <nav class="tool-nav" id="toolNav">
+      <button type="button" data-vista="invitar" onclick="navegar('invitar')" title="Invitar a un voluntario con su correo">📧 Invitar</button>
       <button type="button" data-vista="registro" onclick="nuevoRegistro()" title="Registrar un voluntario o pre-registro">＋ Registrar</button>
       <button type="button" data-vista="inicio" onclick="navegar('inicio')" title="Resumen del día y tareas pendientes">🏠 Inicio <span class="nav-count" id="navCountTareas">0</span></button>
       <button type="button" data-vista="calendario" onclick="navegar('calendario')" title="Estancias en el mes">📅 Calendario</button>
@@ -2855,6 +2856,25 @@
           <div class="perfiles-grid" id="perfilesGrid"></div>
         </section>
 
+        <!-- SECCIÓN: INVITAR (admin) -->
+        <section class="vista" id="vista-invitar">
+          <h2 class="section-heading"><span>📧</span> Invitar voluntario</h2>
+          <p class="view-desc">Escribe el correo del voluntario y envía la invitación. Le llega un enlace, y él mismo llena todos sus datos, sube las fotos del pasaporte y del sello, elige su avatar y crea su contraseña.</p>
+          <div class="panel">
+            <div class="fila-campos">
+              <div class="disp-field" style="flex:1; min-width:220px;">
+                <label for="invCorreo">Correo del voluntario</label>
+                <input type="email" id="invCorreo" placeholder="nombre@gmail.com" autocomplete="off" onkeydown="if (event.key === 'Enter') invitarDesdeFormulario()">
+              </div>
+              <button type="button" class="btn-submit" id="invBtn" onclick="invitarDesdeFormulario()">📧 Enviar invitación</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Invitaciones enviadas</h3>
+            <ul class="tareas-lista" id="invLista"></ul>
+          </div>
+        </section>
+
         <!-- SECCIÓN: HORARIOS Y TAREAS (admin) -->
         <section class="vista" id="vista-horarios">
           <h2 class="section-heading"><span>🕒</span> Horarios y tareas</h2>
@@ -2947,6 +2967,13 @@
                 <div class="onb-campo"><label for="oNombre">Nombre(s) <span class="en">/ First name</span></label><input type="text" id="oNombre" autocomplete="given-name"></div>
                 <div class="onb-campo"><label for="oApellido1">Primer apellido <span class="en">/ Last name</span></label><input type="text" id="oApellido1" autocomplete="family-name"></div>
                 <div class="onb-campo"><label for="oApellido2">Segundo apellido <span class="en">/ Second last name (optional)</span></label><input type="text" id="oApellido2"></div>
+                <div class="onb-campo"><label for="oGenero">Género <span class="en">/ Gender</span></label>
+                  <select id="oGenero">
+                    <option value="">— Elige / Choose —</option>
+                    <option value="Femenino">Femenino / Female</option>
+                    <option value="Masculino">Masculino / Male</option>
+                    <option value="Otro">Otro / Other</option>
+                  </select></div>
                 <div class="onb-campo"><label for="oNacimiento">Fecha de nacimiento <span class="en">/ Date of birth</span></label><input type="date" id="oNacimiento" autocomplete="bday"></div>
                 <div class="onb-campo"><label for="oPais">Nacionalidad <span class="en">/ Nationality</span></label><select id="oPais"></select></div>
                 <div class="onb-campo"><label for="oTipoDoc">Documento <span class="en">/ ID type</span></label>
@@ -2961,6 +2988,10 @@
                 <div class="onb-campo"><label for="oLlegada">Fecha de llegada <span class="en">/ Arrival date</span></label><input type="date" id="oLlegada"></div>
                 <div class="onb-campo"><label for="oSalida">Fecha de salida <span class="en">/ Departure date</span></label><input type="date" id="oSalida">
                   <label class="onb-check"><input type="checkbox" id="oSalidaNoSe" onchange="document.getElementById('oSalida').disabled=this.checked"> Aún no sé <span class="en">/ Not sure yet</span></label></div>
+              </div>
+              <div class="onb-campo" style="margin-top:14px;">
+                <label>¿En qué área vas a ayudar? <span class="en">/ Which area will you help in? (puedes elegir varias / choose one or more)</span></label>
+                <div class="disp-chips" id="oAreas"></div>
               </div>
             </div>
 
@@ -3231,14 +3262,14 @@
     let candidatos = [];
 
     // ===== NAVEGACIÓN ENTRE HERRAMIENTAS =====
-    const VISTAS = ['inicio', 'candidatos', 'registro', 'voluntarios', 'disponibilidad', 'calendario', 'perfiles', 'horarios', 'portal'];
+    const VISTAS = ['inicio', 'candidatos', 'registro', 'voluntarios', 'disponibilidad', 'calendario', 'perfiles', 'horarios', 'invitar', 'portal'];
     const VISTA_INICIAL = 'inicio';
 
     // ===== ROLES =====
     // usuarioActual = { id, correo, nombre, rol, voluntario_id }  rol: 'admin' | 'recepcion' | 'voluntario'
     let usuarioActual = null;
     const VISTAS_POR_ROL = {
-      admin: ['inicio', 'candidatos', 'registro', 'voluntarios', 'disponibilidad', 'calendario', 'perfiles', 'horarios'],
+      admin: ['inicio', 'invitar', 'candidatos', 'registro', 'voluntarios', 'disponibilidad', 'calendario', 'perfiles', 'horarios'],
       recepcion: ['registro', 'calendario'],
       voluntario: ['portal']
     };
@@ -3288,6 +3319,7 @@
       if (vista === 'inicio') renderizarInicio();
       if (vista === 'horarios' && esAdmin()) { prepararFormularioHorarios(); cargarHorariosAdmin(); }
       if (vista === 'portal' && rolActual() === 'voluntario') renderizarPortal();
+      if (vista === 'invitar' && esAdmin()) { cargarInvitaciones(); setTimeout(() => document.getElementById('invCorreo')?.focus(), 50); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -4623,8 +4655,9 @@
         fechaLlegada: fechaISOAVisual(row.fecha_llegada),
         fechaSalida: row.fecha_salida ? fechaISOAVisual(row.fecha_salida) : null,
         habitacion: row.habitacion || 'Por Asignar',
-        nombre: row.nombre,
-        primerApellido: row.primer_apellido,
+        nombre: row.nombre || (row.correo ? String(row.correo).split('@')[0] : 'Sin nombre'),
+        sinNombre: !row.nombre,
+        primerApellido: row.primer_apellido || '',
         segundoApellido: row.segundo_apellido || '',
         genero: row.genero || 'No especificado',
         fechaNacimiento: row.fecha_nacimiento ? fechaISOAVisual(row.fecha_nacimiento) : 'No especificada',
@@ -5631,10 +5664,19 @@
       if (!v) return;
       const correo = correoValido(v.correo);
       if (!correo) { alert('Este voluntario no tiene un correo válido. Edítalo y agrega su correo para invitarlo.'); return; }
-      if (!confirm(`¿Enviar la invitación al portal a ${correo}?\n\nLe llegará un correo para entrar y crear su contraseña. Verá solo su información, sus tareas y el horario del equipo.`)) return;
+      if (!confirm(`¿Enviar la invitación al portal a ${correo}?`)) return;
+      await enviarInvitacion(correo);
+    }
 
-      const { error: errInv } = await supabaseClient.from('invitaciones').upsert({ correo, voluntario_id: id });
-      if (errInv) { mostrarErrorSupabase('No se pudo crear la invitación', errInv); return; }
+    // Envía (o reenvía) la invitación. Si el correo ya es de un voluntario, se vincula a su ficha;
+    // si no, la ficha se crea sola cuando la persona entra y completa su registro.
+    async function enviarInvitacion(correoTexto) {
+      const correo = correoValido(correoTexto);
+      if (!correo) { toast('⚠️ Escribe un correo válido.', 'error'); return false; }
+      const existente = voluntarios.find(v => String(v.correo || '').trim().toLowerCase() === correo);
+      const { error: errInv } = await supabaseClient.from('invitaciones')
+        .upsert({ correo, voluntario_id: existente ? existente.id : null, enviada_en: new Date().toISOString() });
+      if (errInv) { mostrarErrorSupabase('No se pudo crear la invitación', errInv); return false; }
 
       const { error } = await supabaseClient.auth.signInWithOtp({
         email: correo,
@@ -5642,15 +5684,69 @@
       });
       if (error) {
         if (/not authorized|not allowed/i.test(error.message || '')) {
-          toast('⚠️ La invitación quedó guardada, pero Supabase no pudo enviar el correo: falta conectar un correo propio (SMTP) en Supabase.', 'error', 12000);
+          toast('⚠️ La invitación quedó guardada, pero Supabase no pudo enviar el correo: falta conectar el correo de Casa Kiwi (SMTP) en Supabase.', 'error', 12000);
         } else if (/rate limit|seconds/i.test(error.message || '')) {
           toast('⚠️ Se enviaron demasiados correos seguidos. Intenta de nuevo en unos minutos.', 'error', 10000);
         } else {
           mostrarErrorSupabase('No se pudo enviar el correo de invitación', error);
         }
-        return;
+        await cargarInvitaciones();
+        return false;
       }
       toast(`📧 Invitación enviada a ${correo}`, 'ok', 6000);
+      await cargarInvitaciones();
+      return true;
+    }
+
+    // ===== VISTA "INVITAR" =====
+    let invitaciones = [];
+
+    async function cargarInvitaciones() {
+      if (!esAdmin()) return;
+      const { data, error } = await supabaseClient.from('invitaciones').select('correo, voluntario_id, enviada_en, creado_en').order('enviada_en', { ascending: false });
+      if (error) { mostrarErrorSupabase('No se pudieron cargar las invitaciones', error); return; }
+      invitaciones = data || [];
+      renderizarInvitaciones();
+    }
+
+    function renderizarInvitaciones() {
+      const cont = document.getElementById('invLista');
+      if (!cont) return;
+      if (!invitaciones.length) { cont.innerHTML = '<li class="vacio">Todavía no has enviado invitaciones.</li>'; return; }
+      cont.innerHTML = invitaciones.map(i => {
+        const v = voluntarios.find(x => x.id === i.voluntario_id);
+        const listo = v && v.registroCompleto;
+        const estado = listo ? `✅ Registrado: ${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido || '')}`
+          : (v ? '⏳ Entró, pero no ha terminado el registro' : '📨 Invitación enviada, aún no entra');
+        const fecha = i.enviada_en ? new Date(i.enviada_en).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        return `<li class="${listo ? 'hecha' : ''}">
+          ${v ? htmlAvatar(v.avatar, 34) : '<span style="font-size:24px;">✉️</span>'}
+          <div style="min-width:0;">
+            <div class="t-titulo" style="word-break:break-all;">${escaparHTML(i.correo)}</div>
+            <div class="t-meta">${estado} · enviada ${fecha}</div>
+          </div>
+          ${listo ? (v ? `<button class="btn-icon btn-view" style="margin-left:auto;" onclick="verFicha(${v.id})">🔍 Ficha</button>` : '')
+                  : `<button class="btn-icon btn-view" style="margin-left:auto;" data-correo="${escaparHTML(i.correo)}" onclick="enviarInvitacion(this.dataset.correo)">↻ Reenviar</button>
+                     <button class="quitar" title="Borrar invitación" data-correo="${escaparHTML(i.correo)}" onclick="borrarInvitacion(this.dataset.correo)">🗑️</button>`}
+        </li>`;
+      }).join('');
+    }
+
+    async function invitarDesdeFormulario() {
+      const input = document.getElementById('invCorreo');
+      const btn = document.getElementById('invBtn');
+      btn.disabled = true;
+      const ok = await enviarInvitacion(input.value);
+      btn.disabled = false;
+      if (ok) input.value = '';
+      input.focus();
+    }
+
+    async function borrarInvitacion(correo) {
+      if (!confirm(`¿Borrar la invitación de ${correo}? El enlace que recibió ya no le servirá para registrarse.`)) return;
+      const { error } = await supabaseClient.from('invitaciones').delete().eq('correo', correo);
+      if (error) { mostrarErrorSupabase('No se pudo borrar la invitación', error); return; }
+      await cargarInvitaciones();
     }
 
     // ===== HORARIOS SEMANALES =====
@@ -6191,8 +6287,12 @@
       const selPais = document.getElementById('oPais');
       selPais.innerHTML = '<option value="">— Elige / Choose —</option>' + document.getElementById('pais').innerHTML;
       const set = (id, val) => { document.getElementById(id).value = val || ''; };
-      set('oNombre', limpioPre(yo.nombre));
+      set('oNombre', yo.sinNombre ? '' : limpioPre(yo.nombre));
       set('oApellido1', limpioPre(yo.primerApellido));
+      const gen = limpioPre(yo.genero);
+      set('oGenero', ['Femenino', 'Masculino', 'Otro'].includes(gen) ? gen : '');
+      areasOnboarding = [...perfilesDe(yo)];
+      pintarAreasOnboarding();
       set('oApellido2', limpioPre(yo.segundoApellido));
       const nac = limpioPre(yo.fechaNacimiento);
       set('oNacimiento', nac && nac !== '01-01-2000' ? fechaVisualAISO(nac) : '');
@@ -6241,6 +6341,22 @@
       return ruta;
     }
 
+    let areasOnboarding = [];
+    function pintarAreasOnboarding() {
+      const cont = document.getElementById('oAreas');
+      if (!cont) return;
+      cont.innerHTML = obtenerPerfiles().map(p => {
+        const on = areasOnboarding.some(a => normalizarTexto(a) === normalizarTexto(p.nombre));
+        return `<button type="button" class="chip ${on ? 'active' : ''}" data-area="${escaparHTML(p.nombre)}" onclick="alternarAreaOnboarding(this.dataset.area)">${p.icono} ${escaparHTML(p.nombre)}</button>`;
+      }).join('');
+    }
+    function alternarAreaOnboarding(nombre) {
+      areasOnboarding = areasOnboarding.some(a => normalizarTexto(a) === normalizarTexto(nombre))
+        ? areasOnboarding.filter(a => normalizarTexto(a) !== normalizarTexto(nombre))
+        : [...areasOnboarding, nombre];
+      pintarAreasOnboarding();
+    }
+
     async function guardarRegistroVoluntario() {
       const yo = portal.yo;
       const err = document.getElementById('oError');
@@ -6248,10 +6364,12 @@
       const faltan = [];
       if (!val('oNombre')) faltan.push('Nombre / First name');
       if (!val('oApellido1')) faltan.push('Apellido / Last name');
+      if (!val('oGenero')) faltan.push('Género / Gender');
       if (!val('oNacimiento')) faltan.push('Fecha de nacimiento / Date of birth');
       if (!val('oPais')) faltan.push('Nacionalidad / Nationality');
       if (!val('oDocumento')) faltan.push('Número de pasaporte / Passport number');
       if (!val('oLlegada')) faltan.push('Fecha de llegada / Arrival date');
+      if (!areasOnboarding.length) faltan.push('Área en la que vas a ayudar / Area');
       const noSabeSalida = document.getElementById('oSalidaNoSe').checked;
       if (!noSabeSalida && !val('oSalida')) faltan.push('Fecha de salida / Departure date');
       if (!noSabeSalida && val('oSalida') && val('oSalida') < val('oLlegada')) faltan.push('La salida no puede ser antes de la llegada / Departure before arrival');
@@ -6271,6 +6389,7 @@
         const rutaSel = fSel ? await subirDocumento(fSel, 'sello', yo.id) : (yo.fotoSello || '');
         const { error } = await supabaseClient.rpc('completar_mi_registro', { datos: {
           nombre: val('oNombre'), primer_apellido: val('oApellido1'), segundo_apellido: val('oApellido2'),
+          genero: val('oGenero'), perfiles: areasOnboarding,
           fecha_nacimiento: val('oNacimiento'), pais: val('oPais'), tipo_documento: val('oTipoDoc'),
           documento: val('oDocumento').toUpperCase(), telefono: val('oTelefono'),
           fecha_llegada: val('oLlegada'), fecha_salida: noSabeSalida ? '' : val('oSalida'),
@@ -6407,6 +6526,7 @@
       if (esAdmin()) {
         await cargarCandidatos();
         if (location.hash.slice(1) === 'horarios') { prepararFormularioHorarios(); await cargarHorariosAdmin(); }
+        if (location.hash.slice(1) === 'invitar') await cargarInvitaciones();
       }
     }
 
