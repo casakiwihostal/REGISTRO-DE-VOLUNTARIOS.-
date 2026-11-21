@@ -2064,6 +2064,13 @@
     .turno .turno-quien { display: flex; align-items: center; gap: 5px; }
     #mAvatar { display: flex; justify-content: center; margin: 4px 0 6px; }
 
+    /* ===== PASOS DEL REGISTRO ===== */
+    .onb-pasos { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .onb-pasos > span { flex: 1; min-width: 140px; text-align: center; padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-muted); }
+    .onb-pasos > span.on { border-color: var(--dark-orange); color: var(--dark-orange-light); background: rgba(204,75,0,.12); }
+    .onb-pasos > span.hecho { color: #b9e39b; border-color: #2b441a; }
+    .onb-pasos .en { font-weight: 400; opacity: .75; }
+
     /* ===== FOTOS Y BARRA DE GUARDAR ===== */
     .btn-foto { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; padding: 12px 16px; min-height: 48px; border-radius: 8px; background: var(--dark-orange); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; max-width: 100%; box-sizing: border-box; }
     .btn-foto .en { color: rgba(255,255,255,.75); font-weight: 400; }
@@ -2955,6 +2962,7 @@
 
           <!-- Registro obligatorio de la primera entrada -->
           <div id="pOnboarding" style="display:none;">
+            <div class="onb-pasos"><span class="on">1 · Tus datos <span class="en">/ Your details</span></span><span>2 · Tu avatar <span class="en">/ Your avatar</span></span></div>
             <div class="onb-intro">
               <strong>¡Bienvenido/a a Casa Kiwi!</strong> Antes de empezar, completa tu registro. Es obligatorio para el reporte de migración.<br>
               <span class="en">Welcome to Casa Kiwi! Before you start, please complete your registration. It is required for the immigration report.</span>
@@ -3018,15 +3026,26 @@
               </div>
             </div>
 
-            <div class="panel" id="onbPasoAvatar">
-              <h3>3 · Tu avatar <span class="en" style="color:var(--text-muted); font-weight:400;">/ Your avatar</span></h3>
-              <p class="view-desc" style="margin-top:0;">Arma tu personaje: así te verá el equipo durante tu estadía. <span class="en" style="color:var(--text-muted);">Build your character: this is how the team will see you during your stay.</span></p>
-              <div id="onbAvatarEditor"></div>
-            </div>
-
             <div class="onb-barra">
               <div class="onb-error" id="oError"></div>
-              <button type="button" class="btn-submit" id="oGuardar" onclick="guardarRegistroVoluntario()">✓ Guardar y entrar <span style="opacity:.75; font-weight:400;">/ Save and continue</span></button>
+              <button type="button" class="btn-submit" id="oGuardar" onclick="guardarRegistroVoluntario()">Enviar mis datos <span style="opacity:.75; font-weight:400;">/ Send my details</span> →</button>
+            </div>
+          </div>
+
+          <!-- Paso 2: avatar (pantalla aparte, después de enviar los datos) -->
+          <div id="pPasoAvatar" style="display:none;">
+            <div class="onb-pasos"><span class="hecho">✓ 1 · Tus datos <span class="en">/ Your details</span></span><span class="on">2 · Tu avatar <span class="en">/ Your avatar</span></span></div>
+            <div class="onb-intro">
+              <strong>✅ ¡Tus datos quedaron guardados!</strong> Ahora crea tu avatar: así te verá el equipo en el calendario y en los horarios durante tu estadía.<br>
+              <span class="en">Your details are saved! Now create your avatar: this is how the team will see you in the calendar and schedules during your stay.</span>
+            </div>
+            <div class="panel">
+              <h3>Tu avatar <span class="en" style="color:var(--text-muted); font-weight:400;">/ Your avatar</span></h3>
+              <div id="onbAvatarEditor"></div>
+            </div>
+            <div class="onb-barra">
+              <div class="onb-error" id="oErrorAvatar"></div>
+              <button type="button" class="btn-submit" id="oGuardarAvatar" onclick="guardarAvatarPaso2()">✓ Guardar avatar y entrar <span style="opacity:.75; font-weight:400;">/ Save and continue</span></button>
             </div>
           </div>
 
@@ -6013,10 +6032,15 @@
       if (!yo) { document.getElementById('pDatos').innerHTML = '<div class="vacio">Cargando…</div>'; return; }
       document.getElementById('pSaludo').textContent = `Hola, ${limpioPre(yo.nombre) || 'bienvenido/a'}`;
       // Primera entrada: el registro es obligatorio antes de ver el portal
-      const pendiente = !yo.registroCompleto;
-      document.getElementById('pOnboarding').style.display = pendiente ? '' : 'none';
-      document.getElementById('pContenido').style.display = pendiente ? 'none' : '';
-      if (pendiente) { llenarOnboarding(yo); return; }
+      const paso = !yo.registroCompleto ? 1 : (!yo.avatar ? 2 : 0);
+      document.getElementById('pOnboarding').style.display = paso === 1 ? '' : 'none';
+      document.getElementById('pPasoAvatar').style.display = paso === 2 ? '' : 'none';
+      document.getElementById('pContenido').style.display = paso === 0 ? '' : 'none';
+      if (paso === 1) { llenarOnboarding(yo); return; }
+      if (paso === 2) {
+        if (!avatarPaso2Listo) { avatarPaso2Listo = true; renderizarEditorAvatar('onbAvatarEditor', null); }
+        return;
+      }
       document.getElementById('pAvisoSello').style.display = yo.fotoSello ? 'none' : 'flex';
       const vistaAv = document.getElementById('pAvatarVista');
       const nuevoAv = JSON.stringify(yo.avatar || null);
@@ -6237,12 +6261,20 @@
         </div>`;
     }
 
-    // Paso 3 del registro
-    function avatarPendiente() { return !avatarEditor; }
-    async function guardarAvatarOnboarding() {
+    // Paso 2 del registro: pantalla del avatar
+    let avatarPaso2Listo = false;
+    async function guardarAvatarPaso2() {
+      const btn = document.getElementById('oGuardarAvatar');
+      const err = document.getElementById('oErrorAvatar');
       if (!avatarEditor) return;
+      btn.disabled = true; err.textContent = '';
       const { error } = await supabaseClient.rpc('guardar_mi_avatar', { datos: { ...avatarEditor, estilo: 'pixel' } });
-      if (error) throw error;
+      btn.disabled = false;
+      if (error) { err.textContent = 'No se pudo guardar / Could not save: ' + error.message; return; }
+      editorDestino = null;
+      toast('🎉 ¡Bienvenido/a! / Welcome!', 'ok', 5000);
+      await cargarPortal();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Desde el portal: cambiar el avatar en cualquier momento
@@ -6305,7 +6337,6 @@
       if (yo.fechaSalida) set('oSalida', fechaVisualAISO(yo.fechaSalida));
       else { document.getElementById('oSalidaNoSe').checked = true; document.getElementById('oSalida').disabled = true; }
       document.getElementById('onbNotaPre').style.display = (yo.nombre || yo.fechaLlegada) ? 'block' : 'none';
-      renderizarEditorAvatar('onbAvatarEditor', yo.avatar);
     }
 
     function previsualizarFoto(input, imgId, btnId) {
@@ -6378,7 +6409,6 @@
       const sinSello = document.getElementById('oSinSello').checked;
       if (!fPas && !yo.fotoPasaporte) faltan.push('Foto del pasaporte / Passport photo');
       if (!fSel && !sinSello && !yo.fotoSello) faltan.push('Foto del sello de entrada (o marca que aún no llegas) / Entry stamp photo');
-      if (typeof avatarPendiente === 'function' && avatarPendiente()) faltan.push('Tu avatar / Your avatar');
       if (faltan.length) { err.textContent = 'Falta / Missing:\n• ' + faltan.join('\n• '); return; }
       err.textContent = '';
 
@@ -6396,15 +6426,14 @@
           foto_pasaporte: rutaPas, foto_sello: rutaSel
         } });
         if (error) throw error;
-        if (typeof guardarAvatarOnboarding === 'function') await guardarAvatarOnboarding();
-        toast('✅ ¡Registro completo! / Registration complete!', 'ok', 6000);
+        toast('✅ Datos enviados / Details sent', 'ok', 5000);
         await cargarPortal();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (e) {
         err.textContent = 'No se pudo guardar / Could not save: ' + (e.message || e);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '✓ Guardar y entrar <span style="opacity:.75; font-weight:400;">/ Save and continue</span>';
+        btn.innerHTML = 'Enviar mis datos <span style="opacity:.75; font-weight:400;">/ Send my details</span> →';
       }
     }
 
