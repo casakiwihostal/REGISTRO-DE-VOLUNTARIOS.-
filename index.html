@@ -2033,8 +2033,8 @@
     .onb-campo label { display: block; font-size: 13px; color: var(--text-main); font-weight: 600; margin-bottom: 5px; }
     .onb-campo input, .onb-campo select { width: 100%; box-sizing: border-box; }
     .onb-campo.cambiado input, .onb-campo.cambiado select { border-color: var(--dark-orange); }
-    .onb-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); margin-top: 6px; cursor: pointer; }
-    .onb-check input { width: auto; margin: 0; }
+    .onb-check { display: block; font-size: 13px; color: var(--text-muted); margin-top: 8px; cursor: pointer; line-height: 1.4; }
+    .onb-check input { width: 18px; height: 18px; margin: 0 6px 0 0; vertical-align: -3px; }
     .onb-fotos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
     .onb-foto { border: 1px dashed var(--border-color); border-radius: 8px; padding: 14px; text-align: center; background: var(--card-bg); }
     .onb-foto img { max-width: 100%; max-height: 180px; border-radius: 6px; margin-top: 10px; display: none; }
@@ -2063,6 +2063,89 @@
     .nombre-con-avatar { display: flex; align-items: center; gap: 10px; }
     .turno .turno-quien { display: flex; align-items: center; gap: 5px; }
     #mAvatar { display: flex; justify-content: center; margin: 4px 0 6px; }
+
+    /* ===== FOTOS Y BARRA DE GUARDAR ===== */
+    .btn-foto { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; padding: 12px 16px; min-height: 48px; border-radius: 8px; background: var(--dark-orange); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; max-width: 100%; box-sizing: border-box; }
+    .btn-foto .en { color: rgba(255,255,255,.75); font-weight: 400; }
+    .btn-foto.lista { background: #2b441a; color: #d9f5c4; }
+    .btn-foto input { display: none; }
+    .onb-barra { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+    .horario-agenda { display: none; }
+    .ag-dia { border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; background: var(--card-bg); }
+    .ag-dia.es-hoy { border-color: var(--dark-orange); }
+    .ag-fecha { font-weight: 700; font-size: 14px; margin-bottom: 6px; color: var(--text-main); }
+    .ag-dia.es-hoy .ag-fecha { color: var(--dark-orange-light); }
+    .ag-turno { display: flex; align-items: center; gap: 10px; padding: 6px 4px; border-top: 1px solid var(--border-color); }
+    .ag-turno:first-of-type { border-top: none; }
+    .ag-turno.mio { background: rgba(204,75,0,.18); border-radius: 8px; border-top-color: transparent; }
+    .ag-info { display: flex; flex-direction: column; font-size: 13.5px; color: var(--text-main); line-height: 1.35; }
+    .ag-info span { color: var(--text-muted); font-size: 12.5px; }
+    .ag-turno .quitar { margin-left: auto; background: none; border: none; color: #ff8a8a; font-size: 22px; padding: 4px 8px; cursor: pointer; }
+    .ag-vacio { font-size: 13px; color: var(--text-muted); }
+
+    /* ===== CELULAR ===== */
+    @media (max-width: 700px) {
+      .horario-agenda { display: block; }
+      .horario-scroll .horario-tabla { display: none; }
+      .horario-scroll { overflow-x: visible; }
+    }
+    @media (max-width: 640px) {
+      body { font-size: 15px; }
+      input, select, textarea { font-size: 16px !important; }   /* evita el zoom automático en iPhone */
+      .cover { height: 70px !important; }
+      .page-container { padding-left: 14px !important; padding-right: 14px !important; }
+      .brand-header { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "logo sesion" "titulo titulo"; gap: 10px 12px; margin-top: -40px; margin-bottom: 12px; align-items: end; }
+      .brand-logo-card { grid-area: logo; padding: 6px 10px; gap: 8px; }
+      .brand-logo-card .logo-img { height: 38px; width: 38px; }
+      .brand-text .brand-top, .brand-text .brand-city { font-size: 8px !important; letter-spacing: 2px !important; }
+      .brand-text .brand-main { font-size: 20px !important; }
+      .header-texto { grid-area: titulo; min-width: 0; padding-bottom: 0; }
+      .page-title { font-size: 21px !important; margin: 0 !important; }
+      .page-desc { display: none; }
+      .header-sesion { grid-area: sesion; justify-self: end; }
+      .sesion-box { margin: 0; font-size: 12px; white-space: normal; text-align: right; justify-content: flex-end; flex-wrap: wrap; }
+      #dbStatus { display: none; }
+      .tool-nav { margin-bottom: 14px; padding: 8px 0; }
+      .tool-nav button { padding: 8px 12px; font-size: 13.5px; }
+      .section-heading { font-size: 19px !important; }
+      .panel { padding: 14px; border-radius: 10px; }
+      .btn-cal-nav { padding: 8px 10px; font-size: 13px; }
+      .semana-titulo { width: 100%; }
+      /* Portal: lo más usado primero */
+      #pContenido { display: flex; flex-direction: column; gap: 14px; }
+      #pContenido .portal-grid { display: contents; }
+      #pContenido .panel { margin-bottom: 0; }
+      #pAvisoSello { order: 0; margin-bottom: 0; }
+      .p-tareas { order: 1; } .p-horario { order: 2; } .p-avatar { order: 3; } .p-info { order: 4; }
+      .tareas-lista li { padding: 12px 4px; }
+      .tareas-lista input[type="checkbox"] { width: 24px; height: 24px; }
+      .dato { font-size: 13.5px; }
+      .dato span:last-child { text-align: right; word-break: break-word; }
+      /* Registro de bienvenida */
+      .onb-intro { font-size: 13.5px; padding: 12px; }
+      .onb-grid { grid-template-columns: 1fr; gap: 12px; }
+      .onb-foto { padding: 14px 10px; }
+      .btn-foto { width: 100%; }
+      .onb-check { text-align: left; }
+      .onb-barra { position: sticky; bottom: 0; z-index: 40; background: var(--bg-color); padding: 10px 0 14px; margin: 0 -14px; padding-left: 14px; padding-right: 14px; border-top: 1px solid var(--border-color); align-items: stretch; }
+      .onb-barra .btn-submit { width: 100%; justify-content: center; min-height: 50px; font-size: 15px; }
+      .av-preview canvas.pix { width: 96px !important; height: 132px !important; }
+      .av-sw { width: 34px; height: 34px; }
+      /* Calendario más angosto para ver los días */
+      #vista-calendario .view-desc { display: none; }
+      .cal-row-label { width: 138px !important; min-width: 138px !important; max-width: 138px !important; padding: 6px 8px !important; overflow: hidden; }
+      .cal-label-flex { gap: 6px; }
+      .cal-label-flex > div { min-width: 0; overflow: hidden; }
+      .cal-grupo-nombre { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .cal-table th.cal-row-label { font-size: 11px; }
+      .cal-row-label canvas.pix { width: 20px !important; height: 28px !important; }
+      .cal-user-name { font-size: 13px; }
+      .cal-user-meta { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .cal-legend { display: none; }
+      .modal-card { padding: 18px 16px !important; max-height: 92vh; overflow-y: auto; }
+      .modal-grid { grid-template-columns: 1fr !important; }
+      .toast-zone { left: 12px; right: 12px; bottom: 12px; max-width: none; }
+    }
 
     /* ===== LOGIN ===== */
     .login-overlay {
@@ -2156,7 +2239,7 @@
         <h1 class="page-title">Gestor de Voluntarios</h1>
         <p class="page-desc" style="margin-bottom:0;">Candidatos, registros, camas y estancias de los voluntarios en un solo lugar.</p>
       </div>
-      <div style="display:flex; flex-direction:column; align-items:flex-end;">
+      <div class="header-sesion" style="display:flex; flex-direction:column; align-items:flex-end;">
         <div class="sesion-box"><span id="sesionUsuario"></span><button type="button" class="btn-salir" onclick="cerrarSesion()">Salir</button></div>
         <div id="dbStatus" class="db-status">⏳ Conectando…</div>
       </div>
@@ -2887,13 +2970,17 @@
                 <div class="onb-foto">
                   <strong>🛂 Pasaporte</strong> <span class="en" style="color:var(--text-muted);">/ Passport</span>
                   <div class="ayuda">Página con tu foto, que se lean bien los datos. <br>Photo page, data clearly readable.</div>
-                  <input type="file" id="oFotoPasaporte" accept="image/*,application/pdf" onchange="previsualizarFoto(this, 'oPrevPasaporte')">
+                  <label class="btn-foto" id="oBtnPasaporte">📷 Tomar o subir foto <span class="en">/ Take or upload photo</span>
+                    <input type="file" id="oFotoPasaporte" accept="image/*,application/pdf" onchange="previsualizarFoto(this, 'oPrevPasaporte', 'oBtnPasaporte')">
+                  </label>
                   <img id="oPrevPasaporte" alt="Vista previa del pasaporte">
                 </div>
                 <div class="onb-foto">
                   <strong>🛬 Sello de entrada a Colombia</strong> <span class="en" style="color:var(--text-muted);">/ Colombia entry stamp</span>
                   <div class="ayuda">El sello que te pusieron al entrar al país (o el registro digital de Migración). <br>The stamp you got when entering the country.</div>
-                  <input type="file" id="oFotoSello" accept="image/*,application/pdf" onchange="previsualizarFoto(this, 'oPrevSello')">
+                  <label class="btn-foto" id="oBtnSello">📷 Tomar o subir foto <span class="en">/ Take or upload photo</span>
+                    <input type="file" id="oFotoSello" accept="image/*,application/pdf" onchange="previsualizarFoto(this, 'oPrevSello', 'oBtnSello')">
+                  </label>
                   <img id="oPrevSello" alt="Vista previa del sello">
                   <label class="onb-check" style="justify-content:center;"><input type="checkbox" id="oSinSello"> Todavía no he llegado a Colombia <span class="en">/ I haven't arrived yet</span></label>
                 </div>
@@ -2906,26 +2993,28 @@
               <div id="onbAvatarEditor"></div>
             </div>
 
-            <button type="button" class="btn-submit" id="oGuardar" onclick="guardarRegistroVoluntario()">✓ Guardar y entrar <span style="opacity:.75; font-weight:400;">/ Save and continue</span></button>
-            <div class="onb-error" id="oError"></div>
+            <div class="onb-barra">
+              <div class="onb-error" id="oError"></div>
+              <button type="button" class="btn-submit" id="oGuardar" onclick="guardarRegistroVoluntario()">✓ Guardar y entrar <span style="opacity:.75; font-weight:400;">/ Save and continue</span></button>
+            </div>
           </div>
 
           <div id="pContenido">
           <div class="aviso-sello" id="pAvisoSello" style="display:none;">
             <span>🛬 Falta la foto de tu sello de entrada a Colombia. <span style="opacity:.75;">/ Please upload your Colombia entry stamp.</span></span>
-            <input type="file" accept="image/*,application/pdf" onchange="subirSelloPendiente(this)">
+            <label class="btn-foto">📷 Subir sello / Upload stamp<input type="file" accept="image/*,application/pdf" onchange="subirSelloPendiente(this)"></label>
           </div>
           <div class="portal-grid">
-            <div class="panel">
+            <div class="panel p-info">
               <h3>Mi información</h3>
               <div id="pDatos"><div class="vacio">Cargando…</div></div>
             </div>
-            <div class="panel">
-              <h3>Mis tareas</h3>
+            <div class="panel p-tareas">
+              <h3>Mis tareas <span style="color:var(--text-muted); font-weight:400;">/ My tasks</span></h3>
               <ul class="tareas-lista" id="pTareas"></ul>
             </div>
           </div>
-          <div class="panel">
+          <div class="panel p-avatar">
             <h3>Mi avatar <span style="color:var(--text-muted); font-weight:400;">/ My avatar</span></h3>
             <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
               <div id="pAvatarVista"></div>
@@ -2937,14 +3026,14 @@
               <button type="button" class="btn-cal-nav" onclick="cerrarEditorPortal()">Cancelar / Cancel</button>
             </div>
           </div>
-          <div class="panel">
+          <div class="panel p-horario">
             <div class="semana-nav">
               <span class="semana-titulo" id="pSemanaTitulo">Horario del equipo</span>
-              <button class="btn-cal-nav" onclick="moverSemanaPortal(-1)">◀ Anterior</button>
-              <button class="btn-cal-nav" onclick="moverSemanaPortal(0)">Esta semana</button>
-              <button class="btn-cal-nav" onclick="moverSemanaPortal(1)">Siguiente ▶</button>
+              <button class="btn-cal-nav" onclick="moverSemanaPortal(-1)" aria-label="Semana anterior">◀</button>
+              <button class="btn-cal-nav" onclick="moverSemanaPortal(0)">Hoy / Today</button>
+              <button class="btn-cal-nav" onclick="moverSemanaPortal(1)" aria-label="Semana siguiente">▶</button>
             </div>
-            <p class="view-desc" style="margin-top:0;">Tus turnos aparecen resaltados en naranja.</p>
+            <p class="view-desc" style="margin-top:0;">Tus turnos aparecen resaltados en naranja. <span style="opacity:.75;">/ Your shifts are highlighted in orange.</span></p>
             <div class="horario-scroll" id="pGrid"></div>
           </div>
           </div>
@@ -3192,7 +3281,7 @@
       document.querySelectorAll('#toolNav button').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.vista === vista);
       });
-      if (vista === 'calendario') renderizarCalendario();
+      if (vista === 'calendario') { renderizarCalendario(); requestAnimationFrame(enfocarHoyCalendario); }
       if (vista === 'disponibilidad') renderizarDisponibilidad();
       if (vista === 'perfiles') renderizarPerfiles();
       if (vista === 'candidatos') renderizarCandidatos();
@@ -4853,6 +4942,18 @@
       }
     }
 
+    // En celular, abrir el calendario mostrando el día de hoy (solo la primera vez de cada mes)
+    let calScrollHecho = '';
+    function enfocarHoyCalendario() {
+      const clave = `${fechaVistaCalendario.getFullYear()}-${fechaVistaCalendario.getMonth()}`;
+      if (window.innerWidth > 700 || calScrollHecho === clave) return;
+      const w = document.querySelector('.cal-scroll-wrapper');
+      const th = calHead.querySelector('.is-today');
+      if (!w || !th || !w.offsetParent) return;
+      w.scrollLeft = Math.max(0, th.offsetLeft - 150);
+      calScrollHecho = clave;
+    }
+
     async function cargarVoluntarios() {
       if (SUPABASE_PUBLISHABLE_KEY.includes('PEGA_AQUI')) {
         sinRegistros.style.display = 'block';
@@ -4877,6 +4978,7 @@
         voluntarios = (data || []).map(filaDbAFrontend);
         renderizarSegunFiltro();
         renderizarCalendario();
+        requestAnimationFrame(enfocarHoyCalendario);
         renderizarDisponibilidad();
         actualizarHintHabitacion();
         renderizarChipsPerfilFormulario();
@@ -5607,7 +5709,24 @@
         });
         html += `</tr>`;
       });
-      return html + `</tbody></table>`;
+      html += `</tbody></table>`;
+
+      // Vista por días (se usa en celular)
+      const iconoArea = (n) => (areas.find(a => normalizarTexto(a.nombre) === normalizarTexto(n)) || {}).icono || '🏷️';
+      let agenda = `<div class="horario-agenda">`;
+      dias.forEach((d, i) => {
+        const delDia = turnos.filter(t => t.fecha === d).sort((x, y) => String(x.hora_inicio).localeCompare(String(y.hora_inicio)));
+        if (!delDia.length && !editable && !resaltarId) return;
+        agenda += `<div class="ag-dia ${d === hoy ? 'es-hoy' : ''}"><div class="ag-fecha">${DIAS_CORTOS[i]} ${etiquetaDia(d)}${d === hoy ? ' · hoy' : ''}</div>`;
+        agenda += delDia.length ? delDia.map(t => `
+          <div class="ag-turno ${resaltarId && t.voluntario_id === resaltarId ? 'mio' : ''}">
+            ${htmlAvatar(t.avatar, 34)}
+            <div class="ag-info"><strong>${escaparHTML(t.nombre)}</strong><span>${iconoArea(t.area)} ${escaparHTML(t.area)} · ${horaCorta(t.hora_inicio)}–${horaCorta(t.hora_fin)}${t.nota ? ' · ' + escaparHTML(t.nota) : ''}</span></div>
+            ${editable ? `<button class="quitar" title="Quitar turno" onclick="quitarTurno(${t.id})">×</button>` : ''}
+          </div>`).join('') : `<div class="ag-vacio">Sin turnos / No shifts</div>`;
+        agenda += `</div>`;
+      });
+      return html + agenda + `</div>`;
     }
 
     let semanaAdmin = lunesDe(isoHoy());
@@ -6089,9 +6208,11 @@
       renderizarEditorAvatar('onbAvatarEditor', yo.avatar);
     }
 
-    function previsualizarFoto(input, imgId) {
+    function previsualizarFoto(input, imgId, btnId) {
       const img = document.getElementById(imgId);
       const f = input.files && input.files[0];
+      const btn = btnId && document.getElementById(btnId);
+      if (btn && f) { btn.classList.add('lista'); btn.firstChild.textContent = '✓ Foto lista · cambiar '; }
       if (!f || !f.type.startsWith('image/')) { img.style.display = 'none'; return; }
       img.src = URL.createObjectURL(f);
       img.style.display = 'block';
