@@ -2026,6 +2026,44 @@
     .dato span:first-child { color: var(--text-muted); }
     .vacio { color: var(--text-muted); font-size: 13.5px; padding: 8px 0; }
 
+    /* ===== REGISTRO DEL VOLUNTARIO ===== */
+    .onb-intro { background: rgba(204,75,0,.12); border: 1px solid var(--dark-orange-border); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; color: var(--text-main); font-size: 14px; line-height: 1.55; }
+    .onb-intro .en, .onb-campo .en { color: var(--text-muted); font-weight: 400; }
+    .onb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 16px; }
+    .onb-campo label { display: block; font-size: 13px; color: var(--text-main); font-weight: 600; margin-bottom: 5px; }
+    .onb-campo input, .onb-campo select { width: 100%; box-sizing: border-box; }
+    .onb-campo.cambiado input, .onb-campo.cambiado select { border-color: var(--dark-orange); }
+    .onb-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); margin-top: 6px; cursor: pointer; }
+    .onb-check input { width: auto; margin: 0; }
+    .onb-fotos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .onb-foto { border: 1px dashed var(--border-color); border-radius: 8px; padding: 14px; text-align: center; background: var(--card-bg); }
+    .onb-foto img { max-width: 100%; max-height: 180px; border-radius: 6px; margin-top: 10px; display: none; }
+    .onb-foto .ayuda { font-size: 12.5px; color: var(--text-muted); margin: 4px 0 10px; }
+    .onb-error { color: #ffb3b3; font-size: 13.5px; margin-top: 12px; white-space: pre-wrap; }
+    .aviso-sello { background: rgba(255,170,0,.1); border: 1px solid #7a5a00; color: #ffd98a; border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+    .docs-ficha { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+    .docs-ficha a { display: block; width: 120px; text-align: center; font-size: 12px; color: var(--text-muted); text-decoration: none; }
+    .docs-ficha img { width: 120px; height: 85px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); display: block; margin-bottom: 4px; }
+    .docs-ficha .falta { width: 120px; height: 85px; border: 1px dashed var(--border-color); border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+    .difs { font-size: 13px; margin: 6px 0 0; padding-left: 18px; color: var(--text-main); }
+    .difs del { color: var(--text-muted); }
+
+    /* ===== AVATARES ===== */
+    canvas.pix { image-rendering: pixelated; image-rendering: crisp-edges; flex-shrink: 0; vertical-align: middle; }
+    canvas.pix-vacio { opacity: .28; }
+    .av-editor { display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 640px) { .av-editor { grid-template-columns: 1fr; } }
+    .av-preview { display: flex; flex-direction: column; align-items: center; gap: 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px 10px; }
+    .av-controles { display: flex; flex-direction: column; gap: 12px; }
+    .av-fila label { display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+    .av-fila .en { color: var(--text-muted); font-weight: 400; }
+    .av-sw { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border-color); margin: 0 6px 6px 0; cursor: pointer; padding: 0; }
+    .av-sw.on { border-color: #fff; box-shadow: 0 0 0 2px var(--dark-orange); }
+    .cal-label-flex { display: flex; align-items: center; gap: 8px; }
+    .nombre-con-avatar { display: flex; align-items: center; gap: 10px; }
+    .turno .turno-quien { display: flex; align-items: center; gap: 5px; }
+    #mAvatar { display: flex; justify-content: center; margin: 4px 0 6px; }
+
     /* ===== LOGIN ===== */
     .login-overlay {
       position: fixed; inset: 0; z-index: 9999;
@@ -2811,6 +2849,72 @@
         <!-- SECCIÓN: PORTAL DEL VOLUNTARIO -->
         <section class="vista" id="vista-portal">
           <h2 class="section-heading"><span>👋</span> <span id="pSaludo">Hola</span></h2>
+
+          <!-- Registro obligatorio de la primera entrada -->
+          <div id="pOnboarding" style="display:none;">
+            <div class="onb-intro">
+              <strong>¡Bienvenido/a a Casa Kiwi!</strong> Antes de empezar, completa tu registro. Es obligatorio para el reporte de migración.<br>
+              <span class="en">Welcome to Casa Kiwi! Before you start, please complete your registration. It is required for the immigration report.</span>
+              <div id="onbNotaPre" style="margin-top:8px; display:none;">📋 Ya teníamos algunos datos tuyos: revísalos y corrige lo que no coincida. <span class="en">We already had some of your details: check them and fix anything that's wrong.</span></div>
+            </div>
+
+            <div class="panel">
+              <h3>1 · Tus datos <span class="en" style="color:var(--text-muted); font-weight:400;">/ Your details</span></h3>
+              <div class="onb-grid">
+                <div class="onb-campo"><label for="oNombre">Nombre(s) <span class="en">/ First name</span></label><input type="text" id="oNombre" autocomplete="given-name"></div>
+                <div class="onb-campo"><label for="oApellido1">Primer apellido <span class="en">/ Last name</span></label><input type="text" id="oApellido1" autocomplete="family-name"></div>
+                <div class="onb-campo"><label for="oApellido2">Segundo apellido <span class="en">/ Second last name (optional)</span></label><input type="text" id="oApellido2"></div>
+                <div class="onb-campo"><label for="oNacimiento">Fecha de nacimiento <span class="en">/ Date of birth</span></label><input type="date" id="oNacimiento" autocomplete="bday"></div>
+                <div class="onb-campo"><label for="oPais">Nacionalidad <span class="en">/ Nationality</span></label><select id="oPais"></select></div>
+                <div class="onb-campo"><label for="oTipoDoc">Documento <span class="en">/ ID type</span></label>
+                  <select id="oTipoDoc">
+                    <option value="Pasaporte">Pasaporte / Passport</option>
+                    <option value="Cédula de Extranjería">Cédula de Extranjería</option>
+                    <option value="Cédula de Ciudadanía">Cédula de Ciudadanía</option>
+                    <option value="DNI">DNI / ID Nacional</option>
+                  </select></div>
+                <div class="onb-campo"><label for="oDocumento">Número de pasaporte <span class="en">/ Passport number</span></label><input type="text" id="oDocumento" autocomplete="off"></div>
+                <div class="onb-campo"><label for="oTelefono">WhatsApp <span class="en">/ Phone</span></label><input type="tel" id="oTelefono" autocomplete="tel" placeholder="+57 300 000 0000"></div>
+                <div class="onb-campo"><label for="oLlegada">Fecha de llegada <span class="en">/ Arrival date</span></label><input type="date" id="oLlegada"></div>
+                <div class="onb-campo"><label for="oSalida">Fecha de salida <span class="en">/ Departure date</span></label><input type="date" id="oSalida">
+                  <label class="onb-check"><input type="checkbox" id="oSalidaNoSe" onchange="document.getElementById('oSalida').disabled=this.checked"> Aún no sé <span class="en">/ Not sure yet</span></label></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>2 · Fotos <span class="en" style="color:var(--text-muted); font-weight:400;">/ Photos</span></h3>
+              <div class="onb-fotos">
+                <div class="onb-foto">
+                  <strong>🛂 Pasaporte</strong> <span class="en" style="color:var(--text-muted);">/ Passport</span>
+                  <div class="ayuda">Página con tu foto, que se lean bien los datos. <br>Photo page, data clearly readable.</div>
+                  <input type="file" id="oFotoPasaporte" accept="image/*,application/pdf" onchange="previsualizarFoto(this, 'oPrevPasaporte')">
+                  <img id="oPrevPasaporte" alt="Vista previa del pasaporte">
+                </div>
+                <div class="onb-foto">
+                  <strong>🛬 Sello de entrada a Colombia</strong> <span class="en" style="color:var(--text-muted);">/ Colombia entry stamp</span>
+                  <div class="ayuda">El sello que te pusieron al entrar al país (o el registro digital de Migración). <br>The stamp you got when entering the country.</div>
+                  <input type="file" id="oFotoSello" accept="image/*,application/pdf" onchange="previsualizarFoto(this, 'oPrevSello')">
+                  <img id="oPrevSello" alt="Vista previa del sello">
+                  <label class="onb-check" style="justify-content:center;"><input type="checkbox" id="oSinSello"> Todavía no he llegado a Colombia <span class="en">/ I haven't arrived yet</span></label>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" id="onbPasoAvatar">
+              <h3>3 · Tu avatar <span class="en" style="color:var(--text-muted); font-weight:400;">/ Your avatar</span></h3>
+              <p class="view-desc" style="margin-top:0;">Arma tu personaje: así te verá el equipo durante tu estadía. <span class="en" style="color:var(--text-muted);">Build your character: this is how the team will see you during your stay.</span></p>
+              <div id="onbAvatarEditor"></div>
+            </div>
+
+            <button type="button" class="btn-submit" id="oGuardar" onclick="guardarRegistroVoluntario()">✓ Guardar y entrar <span style="opacity:.75; font-weight:400;">/ Save and continue</span></button>
+            <div class="onb-error" id="oError"></div>
+          </div>
+
+          <div id="pContenido">
+          <div class="aviso-sello" id="pAvisoSello" style="display:none;">
+            <span>🛬 Falta la foto de tu sello de entrada a Colombia. <span style="opacity:.75;">/ Please upload your Colombia entry stamp.</span></span>
+            <input type="file" accept="image/*,application/pdf" onchange="subirSelloPendiente(this)">
+          </div>
           <div class="portal-grid">
             <div class="panel">
               <h3>Mi información</h3>
@@ -2822,6 +2926,18 @@
             </div>
           </div>
           <div class="panel">
+            <h3>Mi avatar <span style="color:var(--text-muted); font-weight:400;">/ My avatar</span></h3>
+            <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+              <div id="pAvatarVista"></div>
+              <button type="button" class="btn-cal-nav" id="pAvatarBtnCambiar" onclick="abrirEditorPortal()">✏️ Cambiar avatar / Edit</button>
+            </div>
+            <div id="pAvatarEditor" style="display:none; margin-top:14px;"></div>
+            <div id="pAvatarAcciones" style="display:none; margin-top:14px; gap:10px;">
+              <button type="button" class="btn-submit" onclick="guardarAvatarPortal()">✓ Guardar / Save</button>
+              <button type="button" class="btn-cal-nav" onclick="cerrarEditorPortal()">Cancelar / Cancel</button>
+            </div>
+          </div>
+          <div class="panel">
             <div class="semana-nav">
               <span class="semana-titulo" id="pSemanaTitulo">Horario del equipo</span>
               <button class="btn-cal-nav" onclick="moverSemanaPortal(-1)">◀ Anterior</button>
@@ -2830,6 +2946,7 @@
             </div>
             <p class="view-desc" style="margin-top:0;">Tus turnos aparecen resaltados en naranja.</p>
             <div class="horario-scroll" id="pGrid"></div>
+          </div>
           </div>
         </section>
 
@@ -2846,6 +2963,7 @@
     <div class="modal-card">
       <button class="modal-close" onclick="cerrarModal()">&times;</button>
       <div class="modal-badge-room" id="mBadge"></div>
+      <div id="mAvatar"></div>
       <h3 class="modal-header-name" id="mNombre"></h3>
       
       <div class="modal-grid">
@@ -2885,6 +3003,7 @@
 
       <span class="modal-label">Notas del voluntario</span>
       <div class="modal-notes-box" id="mNotas"></div>
+      <div id="mRegistro"></div>
       <div class="modal-acciones" id="mAcciones"></div>
     </div>
   </div>
@@ -4432,6 +4551,12 @@
         fechaCheckout: matchCheckout ? matchCheckout[1] : null,
         perfiles: (Array.isArray(row.perfiles) && row.perfiles.length) ? row.perfiles : (matchPerfil ? [matchPerfil[1].trim()] : []),
         get perfil() { return this.perfiles[0] || ''; },
+        fotoPasaporte: row.foto_pasaporte || null,
+        fotoSello: row.foto_sello || null,
+        registroCompleto: !!row.registro_completo_en,
+        registroCompletoEn: row.registro_completo_en || null,
+        registroDiferencias: row.registro_diferencias || null,
+        avatar: row.avatar || null,
         createdAt: row.created_at
       };
     }
@@ -4622,7 +4747,7 @@
         const salidaTexto = esIndefinido ? '∞ Indef.' : v.fechaSalida.slice(0, 5);
 
         let rowHtml = `
-          <td class="cal-row-label">
+          <td class="cal-row-label"><div class="cal-label-flex">${htmlAvatar(v.avatar, 32)}<div>
             <div class="cal-user-name" onclick="verFicha(${v.id})" title="Ver ficha de ${escaparHTML(v.nombre)}">
               ${v.esPreRegistro ? '<span style="color:#ff914d;">[Pre] </span>' : ''}${v.esCheckout ? '<span style="color:#9fb3c8;">✔ </span>' : ''}${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)}
             </div>
@@ -4632,7 +4757,7 @@
               <span>•</span>
               <span>${v.fechaLlegada.slice(0, 5)} - ${salidaTexto}</span>
             </div>
-          </td>
+          </div></div></td>
         `;
 
         for (let dia = 1; dia <= totalDias; dia++) {
@@ -4949,8 +5074,10 @@
         tr.innerHTML = `
           <td>${badgeEstadoHab}</td>
           <td>
+            <div class="nombre-con-avatar">${htmlAvatar(v.avatar, 36)}<div>
             <strong>${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido)} ${escaparHTML(v.segundoApellido || '')}</strong>${badgesPerfiles(v)}
-            <div style="font-size:12px; color:var(--text-muted);">${escaparHTML(v.genero)} • ${escaparHTML(v.correo)}</div>
+            <div style="font-size:12px; color:var(--text-muted);">${escaparHTML(v.genero)} • ${escaparHTML(v.correo)}${v.registroCompleto ? ' • ✅ registro' : ''}</div>
+            </div></div>
           </td>
           <td>
             <div>In: ${escaparHTML(v.fechaLlegada)}</div>
@@ -5153,6 +5280,7 @@
       }
       document.getElementById('mBadge').innerHTML = htmlBadge;
       document.getElementById('mNombre').textContent = `${v.nombre} ${v.primerApellido} ${v.segundoApellido || ''}`;
+      document.getElementById('mAvatar').innerHTML = htmlAvatar(v.avatar, 88);
       
       const estadiaTexto = v.fechaSalida 
         ? `${v.fechaLlegada} al ${v.fechaSalida}`
@@ -5167,6 +5295,7 @@
       document.getElementById('mNotas').textContent = v.notas || 'Sin notas registradas.';
       document.getElementById('mPerfil').innerHTML = perfilesDe(v).length ? badgesPerfiles(v) : 'Sin perfil asignado';
       renderizarAccionesFicha(v);
+      renderizarRegistroFicha(v);
       document.getElementById('mCheckoutBox').style.display = v.esCheckout ? 'flex' : 'none';
       document.getElementById('mCheckout').textContent = v.fechaCheckout || '';
       if (v.esCheckout) {
@@ -5472,7 +5601,7 @@
           html += `<td>${delDia.map(t => `
             <span class="turno ${resaltarId && t.voluntario_id === resaltarId ? 'mio' : ''}">
               ${editable ? `<button class="quitar" title="Quitar turno" onclick="quitarTurno(${t.id})">×</button>` : ''}
-              ${escaparHTML(t.nombre)}
+              <span class="turno-quien">${htmlAvatar(t.avatar, 24)}${escaparHTML(t.nombre)}</span>
               <small>${horaCorta(t.hora_inicio)}–${horaCorta(t.hora_fin)}${t.nota ? ' · ' + escaparHTML(t.nota) : ''}</small>
             </span>`).join('')}</td>`;
         });
@@ -5667,7 +5796,16 @@
     function renderizarPortal() {
       const yo = portal.yo;
       if (!yo) { document.getElementById('pDatos').innerHTML = '<div class="vacio">Cargando…</div>'; return; }
-      document.getElementById('pSaludo').textContent = `Hola, ${yo.nombre}`;
+      document.getElementById('pSaludo').textContent = `Hola, ${limpioPre(yo.nombre) || 'bienvenido/a'}`;
+      // Primera entrada: el registro es obligatorio antes de ver el portal
+      const pendiente = !yo.registroCompleto;
+      document.getElementById('pOnboarding').style.display = pendiente ? '' : 'none';
+      document.getElementById('pContenido').style.display = pendiente ? 'none' : '';
+      if (pendiente) { llenarOnboarding(yo); return; }
+      document.getElementById('pAvisoSello').style.display = yo.fotoSello ? 'none' : 'flex';
+      const vistaAv = document.getElementById('pAvatarVista');
+      const nuevoAv = JSON.stringify(yo.avatar || null);
+      if (vistaAv.dataset.av !== nuevoAv) { vistaAv.dataset.av = nuevoAv; vistaAv.innerHTML = htmlAvatar(yo.avatar, 110); }
       const dato = (k, val) => `<div class="dato"><span>${k}</span><span>${escaparHTML(val || '—')}</span></div>`;
       document.getElementById('pDatos').innerHTML =
         dato('Nombre', `${yo.nombre} ${yo.primerApellido} ${yo.segundoApellido || ''}`) +
@@ -5694,6 +5832,393 @@
       semanaPortal = delta === 0 ? lunesDe(isoHoy()) : sumarDiasISO(semanaPortal, 7 * delta);
       portal.turnos = await leerHorarios(semanaPortal);
       renderizarPortal();
+    }
+
+    // ===== AVATARES PIXEL ART =====
+    const AV = {
+      pieles: ['#FCE0C8', '#F1C9A5', '#E0AC82', '#C68B5E', '#8D5A3B', '#5C3A24'],
+      coloresPelo: ['#1E1410', '#4A2C1E', '#8B5A2B', '#C9862E', '#E7C24A', '#D8D2C8', '#B8323A', '#5A6FD6', '#E16FB0', '#2EA37A'],
+      coloresRopa: ['#E8602C', '#2E9A7E', '#3B6FD1', '#C0392B', '#F2C230', '#7B4FC4', '#2B2B2B', '#F4F4F4', '#E16FB0', '#6B8E23'],
+      pantalones: ['#2F4A6B', '#2B2B2B', '#6B5B4B', '#5B7FA6', '#7A3B3B', '#D9C7A0'],
+      peinados: [
+        { id: 'corto', es: 'Corto', en: 'Short' }, { id: 'largo', es: 'Largo', en: 'Long' },
+        { id: 'cola', es: 'Cola', en: 'Ponytail' }, { id: 'afro', es: 'Afro', en: 'Afro' },
+        { id: 'mono', es: 'Moño', en: 'Bun' }, { id: 'rapado', es: 'Rapado', en: 'Buzz' },
+        { id: 'calvo', es: 'Sin pelo', en: 'Bald' }
+      ],
+      ropas: [
+        { id: 'camiseta', es: 'Camiseta', en: 'T-shirt' }, { id: 'buzo', es: 'Buzo', en: 'Hoodie' },
+        { id: 'esqueleto', es: 'Esqueleto', en: 'Tank top' }, { id: 'camisa', es: 'Camisa', en: 'Shirt' },
+        { id: 'vestido', es: 'Vestido', en: 'Dress' }
+      ],
+      accesorios: [
+        { id: 'ninguno', es: 'Nada', en: 'None' }, { id: 'gafas', es: 'Gafas', en: 'Glasses' },
+        { id: 'gorra', es: 'Gorra', en: 'Cap' }, { id: 'audifonos', es: 'Audífonos', en: 'Headphones' },
+        { id: 'bandana', es: 'Bandana', en: 'Bandana' }, { id: 'flor', es: 'Flor', en: 'Flower' }
+      ]
+    };
+    const AVATAR_VACIO = { piel: 2, peinado: 'corto', colorPelo: 5, ropa: 'camiseta', colorRopa: 6, pantalon: 1, accesorio: 'ninguno' };
+
+    function avatarAleatorio() {
+      const r = (arr) => Math.floor(Math.random() * arr.length);
+      return {
+        estilo: 'pixel', piel: r(AV.pieles), peinado: AV.peinados[r(AV.peinados)].id, colorPelo: r(AV.coloresPelo),
+        ropa: AV.ropas[r(AV.ropas)].id, colorRopa: r(AV.coloresRopa), pantalon: r(AV.pantalones),
+        accesorio: Math.random() < 0.5 ? 'ninguno' : AV.accesorios[1 + r(AV.accesorios.slice(1))].id
+      };
+    }
+
+    function oscurecer(hex, f = 0.75) {
+      const n = parseInt(hex.slice(1), 16);
+      const c = (v) => Math.max(0, Math.min(255, Math.round(v * f))).toString(16).padStart(2, '0');
+      return '#' + c(n >> 16) + c((n >> 8) & 255) + c(n & 255);
+    }
+
+    // Dibuja el personaje (16 x 22 píxeles). frame: 0..3 (caminar en el lugar); parpadeo opcional
+    function dibujarAvatar(ctx, av, frame = 0, parpadeo = false) {
+      av = { ...AVATAR_VACIO, ...(av || {}) };
+      const W = 16, H = 22;
+      const g = Array.from({ length: H }, () => Array(W).fill(null));
+      const bob = (frame === 1 || frame === 3) ? -1 : 0;
+      const set = (x, y, c, sube = true) => { const yy = y + 1 + (sube ? bob : 0); if (x >= 0 && x < W && yy >= 0 && yy < H) g[yy][x] = c; };
+      const fila = (y, x1, x2, c, sube) => { for (let x = x1; x <= x2; x++) set(x, y, c, sube); };
+
+      const piel = AV.pieles[av.piel] || AV.pieles[2], pielS = oscurecer(piel, 0.85);
+      const pelo = AV.coloresPelo[av.colorPelo] || AV.coloresPelo[0], peloS = oscurecer(pelo, 0.72);
+      const ropa = AV.coloresRopa[av.colorRopa] || AV.coloresRopa[0], ropaS = oscurecer(ropa, 0.75);
+      const pant = AV.pantalones[av.pantalon] || AV.pantalones[0];
+      const zapato = '#3A2F2A';
+
+      // Piernas y zapatos (no rebotan)
+      const vestido = av.ropa === 'vestido';
+      fila(16, 5, 10, vestido ? ropa : pant, false); fila(17, 5, 10, vestido ? ropa : pant, false);
+      if (vestido) { set(4, 16, ropa, false); set(11, 16, ropa, false); fila(17, 4, 11, ropaS, false); }
+      const pierna = vestido ? piel : pant;
+      const izqArriba = frame === 3, derArriba = frame === 1;
+      [[5, 6, izqArriba], [9, 10, derArriba]].forEach(([a, b, arriba]) => {
+        if (arriba) { set(a, 18, zapato, false); set(b, 18, zapato, false); }
+        else { set(a, 18, pierna, false); set(b, 18, pierna, false); set(a, 19, zapato, false); set(b, 19, zapato, false); }
+      });
+
+      // Cuerpo y brazos
+      for (let y = 11; y <= 15; y++) fila(y, 4, 11, y === 15 ? ropaS : ropa);
+      for (let y = 11; y <= 14; y++) set(11, y, ropaS);
+      const mangaHasta = { camiseta: 12, buzo: 14, esqueleto: 10, camisa: 12, vestido: 11 }[av.ropa] ?? 12;
+      [3, 12].forEach(x => {
+        for (let y = 11; y <= 14; y++) set(x, y, y <= mangaHasta ? (x === 12 ? ropaS : ropa) : piel);
+        set(x, 15, piel);
+      });
+      if (av.ropa === 'esqueleto') { set(4, 11, piel); set(11, 11, piel); }
+      if (av.ropa === 'buzo') { [5, 6, 9, 10].forEach(x => set(x, 10, ropaS)); fila(13, 6, 9, ropaS); fila(14, 6, 9, ropaS); }
+      if (av.ropa === 'camisa') { set(6, 11, '#F4F4F4'); set(9, 11, '#F4F4F4'); set(7, 11, piel); set(8, 11, piel); for (let y = 12; y <= 15; y++) set(7, y, ropaS); }
+
+      // Cabeza
+      for (let y = 3; y <= 9; y++) fila(y, 4, 11, piel);
+      set(4, 3, null); set(11, 3, null); set(4, 9, null); set(11, 9, null);
+      for (let y = 4; y <= 9; y++) set(11, y, y === 9 ? null : pielS);
+      set(3, 6, piel); set(12, 6, pielS);
+      set(7, 10, pielS); set(8, 10, pielS);
+      if (parpadeo) { set(6, 6, pielS); set(9, 6, pielS); }
+      else { set(6, 6, '#1B1B1B'); set(9, 6, '#1B1B1B'); }
+      set(5, 8, '#F29A8A'); set(10, 8, '#E88A7A');
+      set(7, 8, '#C65A4A'); set(8, 8, '#C65A4A');
+
+      // Pelo
+      const p = av.peinado;
+      if (p !== 'calvo') {
+        if (p === 'rapado') { fila(3, 5, 10, peloS); fila(4, 4, 11, peloS); }
+        else if (p === 'afro') {
+          fila(1, 5, 10, pelo); fila(2, 4, 11, pelo); fila(3, 3, 12, pelo); fila(4, 3, 12, pelo);
+          for (let y = 5; y <= 8; y++) { set(3, y, pelo); set(12, y, peloS); set(2, y - 1, pelo); set(13, y - 1, peloS); }
+        } else {
+          fila(2, 5, 10, pelo); fila(3, 4, 11, pelo); fila(4, 4, 11, pelo);
+          set(11, 3, peloS); set(11, 4, peloS); set(4, 5, pelo); set(11, 5, peloS); set(5, 5, pelo);
+          if (p === 'largo') { for (let y = 5; y <= 12; y++) { set(3, y, pelo); set(12, y, peloS); } for (let y = 6; y <= 9; y++) set(4, y, pelo); }
+          if (p === 'cola') { set(12, 3, peloS); set(13, 4, pelo); set(13, 5, pelo); set(13, 6, peloS); set(13, 7, peloS); set(12, 8, peloS); }
+          if (p === 'mono') { fila(0, 6, 9, pelo); fila(1, 6, 9, peloS); }
+        }
+      }
+
+      // Accesorios
+      const a = av.accesorio;
+      if (a === 'gafas') { fila(6, 5, 10, '#1B1B1B'); set(6, 6, '#8FD3FF'); set(9, 6, '#8FD3FF'); }
+      if (a === 'gorra') { fila(1, 5, 10, ropa); fila(2, 4, 11, ropa); fila(3, 4, 11, ropaS); fila(3, 9, 13, oscurecer(ropa, 0.6)); }
+      if (a === 'audifonos') { fila(1, 5, 10, '#333'); set(4, 2, '#333'); set(11, 2, '#333'); set(3, 3, '#333'); set(12, 3, '#333'); for (let y = 4; y <= 7; y++) { set(3, y, '#222'); set(12, y, '#222'); } }
+      if (a === 'bandana') { fila(4, 4, 11, ropa); set(3, 5, ropaS); set(2, 6, ropaS); }
+      if (a === 'flor') { set(11, 2, '#F06292'); set(12, 3, '#F06292'); set(10, 3, '#F06292'); set(11, 4, '#F06292'); set(11, 3, '#FFD54F'); }
+
+      // Contorno oscuro alrededor de la silueta
+      const out = g.map(r => r.slice());
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        if (g[y][x]) continue;
+        if ((y > 0 && g[y - 1][x]) || (y < H - 1 && g[y + 1][x]) || (x > 0 && g[y][x - 1]) || (x < W - 1 && g[y][x + 1])) out[y][x] = '#151515';
+      }
+      ctx.clearRect(0, 0, W, H);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (out[y][x]) { ctx.fillStyle = out[y][x]; ctx.fillRect(x, y, 1, 1); }
+    }
+
+    // HTML de un avatar animado. alto en px; sin avatar → silueta gris
+    function htmlAvatar(av, alto = 40, extraClase = '') {
+      const ancho = Math.round(alto * 16 / 22);
+      const datos = av ? escaparHTML(JSON.stringify(av)) : '';
+      return `<canvas class="pix ${av ? '' : 'pix-vacio'} ${extraClase}" width="16" height="22" data-av="${datos}" style="width:${ancho}px;height:${alto}px;" title="${av ? '' : 'Sin avatar todavía'}"></canvas>`;
+    }
+
+    // Un solo reloj anima todos los avatares de la página
+    let avTick = 0;
+    function animarAvatares() {
+      avTick++;
+      document.querySelectorAll('canvas.pix').forEach((cv, i) => {
+        if (!cv.isConnected || cv.offsetParent === null) return;
+        let av = null;
+        try { av = cv.dataset.av ? JSON.parse(cv.dataset.av) : null; } catch (e) {}
+        const frame = (avTick + i) % 4;
+        const parpadeo = ((avTick + i * 3) % 14) === 0;
+        dibujarAvatar(cv.getContext('2d'), av, frame, parpadeo);
+      });
+    }
+    setInterval(animarAvatares, 260);
+    new MutationObserver(() => { if (!animarAvatares.pend) { animarAvatares.pend = true; requestAnimationFrame(() => { animarAvatares.pend = false; avTick--; animarAvatares(); }); } })
+      .observe(document.body, { childList: true, subtree: true });
+
+    // ===== EDITOR DE AVATAR =====
+    let avatarEditor = null;          // avatar que se está armando
+    let editorDestino = null;         // id del contenedor del editor
+
+    function renderizarEditorAvatar(contId, avInicial) {
+      editorDestino = contId;
+      avatarEditor = { ...(avInicial && avInicial.estilo ? avInicial : avatarAleatorio()) };
+      pintarEditorAvatar();
+    }
+
+    function cambiarAvatar(campo, valor) {
+      avatarEditor[campo] = valor;
+      pintarEditorAvatar();
+    }
+
+    function pintarEditorAvatar() {
+      const cont = document.getElementById(editorDestino);
+      if (!cont) return;
+      const av = avatarEditor;
+      const swatches = (campo, colores) => colores.map((c, i) =>
+        `<button type="button" class="av-sw ${av[campo] === i ? 'on' : ''}" style="background:${c}" aria-label="Color ${i + 1}" onclick="cambiarAvatar('${campo}', ${i})"></button>`).join('');
+      const opciones = (campo, lista) => lista.map(o =>
+        `<button type="button" class="chip ${av[campo] === o.id ? 'active' : ''}" onclick="cambiarAvatar('${campo}', '${o.id}')">${o.es} <span class="en">/ ${o.en}</span></button>`).join('');
+      cont.innerHTML = `
+        <div class="av-editor">
+          <div class="av-preview">
+            ${htmlAvatar(av, 176)}
+            <button type="button" class="btn-cal-nav" onclick="avatarEditor = avatarAleatorio(); pintarEditorAvatar();">🎲 Aleatorio <span class="en">/ Random</span></button>
+          </div>
+          <div class="av-controles">
+            <div class="av-fila"><label>Piel <span class="en">/ Skin</span></label><div>${swatches('piel', AV.pieles)}</div></div>
+            <div class="av-fila"><label>Peinado <span class="en">/ Hair</span></label><div class="disp-chips">${opciones('peinado', AV.peinados)}</div></div>
+            <div class="av-fila"><label>Color de pelo <span class="en">/ Hair color</span></label><div>${swatches('colorPelo', AV.coloresPelo)}</div></div>
+            <div class="av-fila"><label>Ropa <span class="en">/ Outfit</span></label><div class="disp-chips">${opciones('ropa', AV.ropas)}</div></div>
+            <div class="av-fila"><label>Color de ropa <span class="en">/ Outfit color</span></label><div>${swatches('colorRopa', AV.coloresRopa)}</div></div>
+            <div class="av-fila"><label>Pantalón <span class="en">/ Pants</span></label><div>${swatches('pantalon', AV.pantalones)}</div></div>
+            <div class="av-fila"><label>Accesorio <span class="en">/ Accessory</span></label><div class="disp-chips">${opciones('accesorio', AV.accesorios)}</div></div>
+          </div>
+        </div>`;
+    }
+
+    // Paso 3 del registro
+    function avatarPendiente() { return !avatarEditor; }
+    async function guardarAvatarOnboarding() {
+      if (!avatarEditor) return;
+      const { error } = await supabaseClient.rpc('guardar_mi_avatar', { datos: { ...avatarEditor, estilo: 'pixel' } });
+      if (error) throw error;
+    }
+
+    // Desde el portal: cambiar el avatar en cualquier momento
+    function abrirEditorPortal() {
+      document.getElementById('pAvatarEditor').style.display = '';
+      document.getElementById('pAvatarAcciones').style.display = '';
+      document.getElementById('pAvatarBtnCambiar').style.display = 'none';
+      renderizarEditorAvatar('pAvatarEditor', portal.yo && portal.yo.avatar);
+    }
+    function cerrarEditorPortal() {
+      document.getElementById('pAvatarEditor').style.display = 'none';
+      document.getElementById('pAvatarAcciones').style.display = 'none';
+      document.getElementById('pAvatarBtnCambiar').style.display = '';
+      editorDestino = null;
+    }
+    async function guardarAvatarPortal() {
+      const { error } = await supabaseClient.rpc('guardar_mi_avatar', { datos: { ...avatarEditor, estilo: 'pixel' } });
+      if (error) { mostrarErrorSupabase('No se pudo guardar tu avatar', error); return; }
+      toast('✨ Avatar guardado / Avatar saved', 'ok');
+      cerrarEditorPortal();
+      await cargarPortal();
+    }
+
+    // ===== REGISTRO OBLIGATORIO DEL VOLUNTARIO (primera entrada) =====
+    const BUCKET_DOCS = 'documentos-voluntarios';
+    let onboardingLleno = false;
+    const NOMBRES_CAMPO = {
+      nombre: 'Nombre', primer_apellido: 'Primer apellido', segundo_apellido: 'Segundo apellido',
+      fecha_nacimiento: 'Nacimiento', pais: 'País', tipo_documento: 'Tipo de documento', documento: 'Documento',
+      telefono: 'Teléfono', fecha_llegada: 'Llegada', fecha_salida: 'Salida'
+    };
+
+    // Los valores de relleno del pre-registro se muestran vacíos para que los completen
+    function limpioPre(valor) {
+      const v = String(valor || '').trim();
+      return ['pendiente', 'no especificado', 'no especificada', 'pendiente@kiwi.com'].includes(v.toLowerCase()) ? '' : v;
+    }
+
+    function llenarOnboarding(yo) {
+      if (onboardingLleno) return;
+      onboardingLleno = true;
+      const selPais = document.getElementById('oPais');
+      selPais.innerHTML = '<option value="">— Elige / Choose —</option>' + document.getElementById('pais').innerHTML;
+      const set = (id, val) => { document.getElementById(id).value = val || ''; };
+      set('oNombre', limpioPre(yo.nombre));
+      set('oApellido1', limpioPre(yo.primerApellido));
+      set('oApellido2', limpioPre(yo.segundoApellido));
+      const nac = limpioPre(yo.fechaNacimiento);
+      set('oNacimiento', nac && nac !== '01-01-2000' ? fechaVisualAISO(nac) : '');
+      set('oPais', limpioPre(yo.pais) === 'Colombia' && yo.esPreRegistro ? '' : limpioPre(yo.pais));
+      const tipo = limpioPre(yo.tipoDocumento);
+      set('oTipoDoc', tipo && tipo !== 'Cédula de Ciudadanía' ? tipo : 'Pasaporte');
+      set('oDocumento', limpioPre(yo.documento));
+      set('oTelefono', limpioPre(yo.telefono));
+      set('oLlegada', yo.fechaLlegada ? fechaVisualAISO(yo.fechaLlegada) : '');
+      if (yo.fechaSalida) set('oSalida', fechaVisualAISO(yo.fechaSalida));
+      else { document.getElementById('oSalidaNoSe').checked = true; document.getElementById('oSalida').disabled = true; }
+      document.getElementById('onbNotaPre').style.display = (yo.nombre || yo.fechaLlegada) ? 'block' : 'none';
+      renderizarEditorAvatar('onbAvatarEditor', yo.avatar);
+    }
+
+    function previsualizarFoto(input, imgId) {
+      const img = document.getElementById(imgId);
+      const f = input.files && input.files[0];
+      if (!f || !f.type.startsWith('image/')) { img.style.display = 'none'; return; }
+      img.src = URL.createObjectURL(f);
+      img.style.display = 'block';
+    }
+
+    // Reduce las fotos del celular (pueden pesar 5–10 MB) a un JPG liviano y legible
+    async function comprimirImagen(file) {
+      if (!file.type.startsWith('image/') || /heic|heif/i.test(file.type)) return file;
+      try {
+        const bmp = await createImageBitmap(file);
+        const escala = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(bmp.width * escala); c.height = Math.round(bmp.height * escala);
+        c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+        const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
+        return blob || file;
+      } catch (e) { return file; }
+    }
+
+    async function subirDocumento(file, tipo, voluntarioId) {
+      const datos = await comprimirImagen(file);
+      const ext = datos.type === 'application/pdf' ? 'pdf' : (datos.type === 'image/jpeg' ? 'jpg' : (file.name.split('.').pop() || 'img'));
+      const ruta = `${voluntarioId}/${tipo}-${Date.now()}.${ext}`;
+      const { error } = await supabaseClient.storage.from(BUCKET_DOCS).upload(ruta, datos, { contentType: datos.type || file.type, upsert: false });
+      if (error) throw error;
+      return ruta;
+    }
+
+    async function guardarRegistroVoluntario() {
+      const yo = portal.yo;
+      const err = document.getElementById('oError');
+      const val = id => document.getElementById(id).value.trim();
+      const faltan = [];
+      if (!val('oNombre')) faltan.push('Nombre / First name');
+      if (!val('oApellido1')) faltan.push('Apellido / Last name');
+      if (!val('oNacimiento')) faltan.push('Fecha de nacimiento / Date of birth');
+      if (!val('oPais')) faltan.push('Nacionalidad / Nationality');
+      if (!val('oDocumento')) faltan.push('Número de pasaporte / Passport number');
+      if (!val('oLlegada')) faltan.push('Fecha de llegada / Arrival date');
+      const noSabeSalida = document.getElementById('oSalidaNoSe').checked;
+      if (!noSabeSalida && !val('oSalida')) faltan.push('Fecha de salida / Departure date');
+      if (!noSabeSalida && val('oSalida') && val('oSalida') < val('oLlegada')) faltan.push('La salida no puede ser antes de la llegada / Departure before arrival');
+      const fPas = document.getElementById('oFotoPasaporte').files[0];
+      const fSel = document.getElementById('oFotoSello').files[0];
+      const sinSello = document.getElementById('oSinSello').checked;
+      if (!fPas && !yo.fotoPasaporte) faltan.push('Foto del pasaporte / Passport photo');
+      if (!fSel && !sinSello && !yo.fotoSello) faltan.push('Foto del sello de entrada (o marca que aún no llegas) / Entry stamp photo');
+      if (typeof avatarPendiente === 'function' && avatarPendiente()) faltan.push('Tu avatar / Your avatar');
+      if (faltan.length) { err.textContent = 'Falta / Missing:\n• ' + faltan.join('\n• '); return; }
+      err.textContent = '';
+
+      const btn = document.getElementById('oGuardar');
+      btn.disabled = true; btn.textContent = 'Guardando… / Saving…';
+      try {
+        const rutaPas = fPas ? await subirDocumento(fPas, 'pasaporte', yo.id) : yo.fotoPasaporte;
+        const rutaSel = fSel ? await subirDocumento(fSel, 'sello', yo.id) : (yo.fotoSello || '');
+        const { error } = await supabaseClient.rpc('completar_mi_registro', { datos: {
+          nombre: val('oNombre'), primer_apellido: val('oApellido1'), segundo_apellido: val('oApellido2'),
+          fecha_nacimiento: val('oNacimiento'), pais: val('oPais'), tipo_documento: val('oTipoDoc'),
+          documento: val('oDocumento').toUpperCase(), telefono: val('oTelefono'),
+          fecha_llegada: val('oLlegada'), fecha_salida: noSabeSalida ? '' : val('oSalida'),
+          foto_pasaporte: rutaPas, foto_sello: rutaSel
+        } });
+        if (error) throw error;
+        if (typeof guardarAvatarOnboarding === 'function') await guardarAvatarOnboarding();
+        toast('✅ ¡Registro completo! / Registration complete!', 'ok', 6000);
+        await cargarPortal();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (e) {
+        err.textContent = 'No se pudo guardar / Could not save: ' + (e.message || e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '✓ Guardar y entrar <span style="opacity:.75; font-weight:400;">/ Save and continue</span>';
+      }
+    }
+
+    async function subirSelloPendiente(input) {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      try {
+        const ruta = await subirDocumento(f, 'sello', portal.yo.id);
+        const { error } = await supabaseClient.rpc('guardar_mi_sello', { ruta });
+        if (error) throw error;
+        toast('✅ Sello guardado / Stamp saved', 'ok');
+        await cargarPortal();
+      } catch (e) {
+        toast('⚠️ No se pudo subir / Upload failed: ' + (e.message || e), 'error', 8000);
+      }
+    }
+
+    // ===== FICHA (admin / recepción): estado del registro y documentos =====
+    async function urlDocumento(ruta) {
+      if (!ruta) return null;
+      const { data } = await supabaseClient.storage.from(BUCKET_DOCS).createSignedUrl(ruta, 3600);
+      return data ? data.signedUrl : null;
+    }
+
+    async function renderizarRegistroFicha(v) {
+      const cont = document.getElementById('mRegistro');
+      if (!cont) return;
+      if (rolActual() === 'voluntario') { cont.innerHTML = ''; return; }
+      const estado = v.registroCompleto
+        ? `✅ Completó su registro el ${new Date(v.registroCompletoEn).toLocaleDateString('es-CO')}`
+        : '⏳ Aún no completa su registro en el portal';
+      let difs = '';
+      if (v.registroDiferencias && Object.keys(v.registroDiferencias).length) {
+        const fmt = (x) => x === null || x === undefined || x === '' ? '—' : escaparHTML(/^\d{4}-\d{2}-\d{2}$/.test(String(x)) ? fechaISOAVisual(String(x)) : String(x));
+        difs = `<div style="margin-top:8px; font-size:13px; color:var(--dark-orange-light);">Cambió respecto a lo que teníamos:</div><ul class="difs">` +
+          Object.entries(v.registroDiferencias).map(([k, d]) => `<li>${NOMBRES_CAMPO[k] || k}: <del>${fmt(d.antes)}</del> → <strong>${fmt(d.ahora)}</strong></li>`).join('') + `</ul>`;
+      }
+      const caja = (titulo, id) => `<a id="${id}" target="_blank" rel="noopener"><div class="falta">…</div>${titulo}</a>`;
+      cont.innerHTML = `
+        <span class="modal-label" style="display:block; margin-top:14px;">Registro del voluntario</span>
+        <div style="font-size:14px; margin-top:4px;">${estado}</div>${difs}
+        <div class="docs-ficha">${caja('🛂 Pasaporte', 'mDocPas')}${caja('🛬 Sello de entrada', 'mDocSel')}</div>`;
+      const pintar = async (id, ruta) => {
+        const a = document.getElementById(id);
+        if (!a) return;
+        const titulo = a.lastChild.textContent;
+        if (!ruta) { a.innerHTML = `<div class="falta">Sin foto</div>${titulo}`; a.removeAttribute('href'); return; }
+        const url = await urlDocumento(ruta);
+        if (!url) { a.innerHTML = `<div class="falta">⚠️</div>${titulo}`; return; }
+        a.href = url;
+        a.innerHTML = /\.pdf$/i.test(ruta) ? `<div class="falta">📄 PDF</div>${titulo}` : `<img src="${url}" alt="${titulo}">${titulo}`;
+      };
+      pintar('mDocPas', v.fotoPasaporte);
+      pintar('mDocSel', v.fotoSello);
     }
 
     // ===== INGRESO (Supabase Auth) =====
