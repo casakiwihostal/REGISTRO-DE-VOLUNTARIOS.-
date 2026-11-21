@@ -5719,7 +5719,7 @@
         const estado = listo ? `✅ Registrado: ${escaparHTML(v.nombre)} ${escaparHTML(v.primerApellido || '')}`
           : (v ? '⏳ Entró, pero no ha terminado el registro' : '📨 Invitación enviada, aún no entra');
         const fecha = i.enviada_en ? new Date(i.enviada_en).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
-        return `<li class="${listo ? 'hecha' : ''}">
+        return `<li>
           ${v ? htmlAvatar(v.avatar, 34) : '<span style="font-size:24px;">✉️</span>'}
           <div style="min-width:0;">
             <div class="t-titulo" style="word-break:break-all;">${escaparHTML(i.correo)}</div>
