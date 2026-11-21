@@ -3006,7 +3006,7 @@
                     <option value="Otro">Otro / Other</option>
                   </select></div>
                 <div class="onb-campo"><label for="oNacimiento">Fecha de nacimiento <span class="en">/ Date of birth</span></label><input type="date" id="oNacimiento" autocomplete="bday"></div>
-                <div class="onb-campo"><label for="oPais">Nacionalidad <span class="en">/ Nationality</span></label><select id="oPais"></select></div>
+                <div class="onb-campo"><label for="oPais">Nacionalidad <span class="en">/ Nationality</span></label><select id="oPais" onchange="ajustarSegunNacionalidad(true)"></select></div>
                 <div class="onb-campo"><label for="oTipoDoc">Documento <span class="en">/ ID type</span></label>
                   <select id="oTipoDoc">
                     <option value="Pasaporte">Pasaporte / Passport</option>
@@ -3014,7 +3014,7 @@
                     <option value="Cédula de Ciudadanía">Cédula de Ciudadanía</option>
                     <option value="DNI">DNI / ID Nacional</option>
                   </select></div>
-                <div class="onb-campo"><label for="oDocumento">Número de pasaporte <span class="en">/ Passport number</span></label><input type="text" id="oDocumento" autocomplete="off"></div>
+                <div class="onb-campo"><label for="oDocumento" id="oDocumentoLabel">Número de pasaporte <span class="en">/ Passport number</span></label><input type="text" id="oDocumento" autocomplete="off"></div>
                 <div class="onb-campo"><label for="oTelefono">WhatsApp <span class="en">/ Phone</span></label><input type="tel" id="oTelefono" autocomplete="tel" placeholder="+57 300 000 0000"></div>
                 <div class="onb-campo"><label for="oLlegada">Fecha de llegada <span class="en">/ Arrival date</span></label><input type="date" id="oLlegada"></div>
                 <div class="onb-campo"><label for="oSalida">Fecha de salida <span class="en">/ Departure date</span></label><input type="date" id="oSalida">
@@ -3030,14 +3030,22 @@
               <h3>2 · Fotos <span class="en" style="color:var(--text-muted); font-weight:400;">/ Photos</span></h3>
               <div class="onb-fotos">
                 <div class="onb-foto">
-                  <strong>🛂 Pasaporte</strong> <span class="en" style="color:var(--text-muted);">/ Passport</span>
+                  <strong id="oTituloDoc">🛂 Pasaporte</strong> <span class="en" id="oTituloDocEn" style="color:var(--text-muted);">/ Passport</span>
                   <div class="ayuda">Página con tu foto, que se lean bien los datos. <br>Photo page, data clearly readable.</div>
                   <label class="btn-foto" id="oBtnPasaporte">📷 Tomar o subir foto <span class="en">/ Take or upload photo</span>
                     <input type="file" id="oFotoPasaporte" accept="image/*,application/pdf" onchange="previsualizarFoto(this, 'oPrevPasaporte', 'oBtnPasaporte')">
                   </label>
                   <img id="oPrevPasaporte" alt="Vista previa del pasaporte">
                 </div>
-                <div class="onb-foto">
+                <div class="onb-foto" id="oCajaReverso" style="display:none;">
+                  <strong>🪪 Cédula · parte de atrás</strong> <span class="en" style="color:var(--text-muted);">/ ID card · back</span>
+                  <div class="ayuda">Que se vean bien la huella y los datos. <br>Make sure the details are readable.</div>
+                  <label class="btn-foto" id="oBtnReverso">📷 Tomar o subir foto <span class="en">/ Take or upload photo</span>
+                    <input type="file" id="oFotoReverso" accept="image/*,application/pdf" onchange="previsualizarFoto(this, 'oPrevReverso', 'oBtnReverso')">
+                  </label>
+                  <img id="oPrevReverso" alt="Vista previa de la parte de atrás de la cédula">
+                </div>
+                <div class="onb-foto" id="oCajaSello">
                   <strong>🛬 Sello de entrada a Colombia</strong> <span class="en" style="color:var(--text-muted);">/ Colombia entry stamp</span>
                   <div class="ayuda">El sello que te pusieron al entrar al país (o el registro digital de Migración). <br>The stamp you got when entering the country.</div>
                   <label class="btn-foto" id="oBtnSello">📷 Tomar o subir foto <span class="en">/ Take or upload photo</span>
@@ -4721,6 +4729,7 @@
         get perfil() { return this.perfiles[0] || ''; },
         fotoPasaporte: row.foto_pasaporte || null,
         fotoSello: row.foto_sello || null,
+        fotoReverso: row.foto_reverso || null,
         registroCompleto: !!row.registro_completo_en,
         registroCompletoEn: row.registro_completo_en || null,
         registroDiferencias: row.registro_diferencias || null,
@@ -6110,7 +6119,7 @@
         if (!avatarPaso2Listo) { avatarPaso2Listo = true; renderizarEditorAvatar('onbAvatarEditor', null); }
         return;
       }
-      document.getElementById('pAvisoSello').style.display = yo.fotoSello ? 'none' : 'flex';
+      document.getElementById('pAvisoSello').style.display = (yo.fotoSello || esColombiano(yo.pais)) ? 'none' : 'flex';
       document.getElementById('pPendiente').style.display = yo.aprobado ? 'none' : '';
       document.querySelectorAll('#pContenido .p-tareas, #pContenido .p-horario').forEach(el => { el.style.display = yo.aprobado ? '' : 'none'; });
       const vistaAv = document.getElementById('pAvatarVista');
@@ -6408,6 +6417,7 @@
       if (yo.fechaSalida) set('oSalida', fechaVisualAISO(yo.fechaSalida));
       else { document.getElementById('oSalidaNoSe').checked = true; document.getElementById('oSalida').disabled = true; }
       document.getElementById('onbNotaPre').style.display = (yo.nombre || yo.fechaLlegada) ? 'block' : 'none';
+      ajustarSegunNacionalidad(false);
     }
 
     function previsualizarFoto(input, imgId, btnId) {
@@ -6443,6 +6453,25 @@
       return ruta;
     }
 
+    function esColombiano(pais) { return normalizarTexto(pais) === 'colombia'; }
+
+    // Colombianos: no necesitan sello de entrada y se identifican con cédula
+    function ajustarSegunNacionalidad(cambioManual) {
+      const col = esColombiano(document.getElementById('oPais').value);
+      document.getElementById('oCajaSello').style.display = col ? 'none' : '';
+      document.getElementById('oCajaReverso').style.display = col ? '' : 'none';
+      document.getElementById('oDocumentoLabel').innerHTML = col
+        ? 'Número de cédula <span class="en">/ ID number</span>'
+        : 'Número de pasaporte <span class="en">/ Passport number</span>';
+      document.getElementById('oTituloDoc').textContent = col ? '🪪 Cédula · parte de adelante' : '🛂 Pasaporte';
+      document.getElementById('oTituloDocEn').textContent = col ? '/ ID card · front' : '/ Passport';
+      const tipo = document.getElementById('oTipoDoc');
+      if (cambioManual) {
+        if (col && tipo.value === 'Pasaporte') tipo.value = 'Cédula de Ciudadanía';
+        if (!col && tipo.value === 'Cédula de Ciudadanía') tipo.value = 'Pasaporte';
+      }
+    }
+
     let areasOnboarding = [];
     function pintarAreasOnboarding() {
       const cont = document.getElementById('oAreas');
@@ -6469,7 +6498,7 @@
       if (!val('oGenero')) faltan.push('Género / Gender');
       if (!val('oNacimiento')) faltan.push('Fecha de nacimiento / Date of birth');
       if (!val('oPais')) faltan.push('Nacionalidad / Nationality');
-      if (!val('oDocumento')) faltan.push('Número de pasaporte / Passport number');
+      if (!val('oDocumento')) faltan.push(esColombiano(val('oPais')) ? 'Número de cédula / ID number' : 'Número de pasaporte / Passport number');
       if (!val('oLlegada')) faltan.push('Fecha de llegada / Arrival date');
       if (!areasOnboarding.length) faltan.push('Área en la que vas a ayudar / Area');
       const noSabeSalida = document.getElementById('oSalidaNoSe').checked;
@@ -6478,8 +6507,11 @@
       const fPas = document.getElementById('oFotoPasaporte').files[0];
       const fSel = document.getElementById('oFotoSello').files[0];
       const sinSello = document.getElementById('oSinSello').checked;
-      if (!fPas && !yo.fotoPasaporte) faltan.push('Foto del pasaporte / Passport photo');
-      if (!fSel && !sinSello && !yo.fotoSello) faltan.push('Foto del sello de entrada (o marca que aún no llegas) / Entry stamp photo');
+      const col = esColombiano(val('oPais'));
+      const fRev = document.getElementById('oFotoReverso').files[0];
+      if (!fPas && !yo.fotoPasaporte) faltan.push(col ? 'Foto de la cédula, parte de adelante / ID front' : 'Foto del pasaporte / Passport photo');
+      if (col && !fRev && !yo.fotoReverso) faltan.push('Foto de la cédula, parte de atrás / ID back');
+      if (!col && !fSel && !sinSello && !yo.fotoSello) faltan.push('Foto del sello de entrada (o marca que aún no llegas) / Entry stamp photo');
       if (faltan.length) { err.textContent = 'Falta / Missing:\n• ' + faltan.join('\n• '); return; }
       err.textContent = '';
 
@@ -6487,14 +6519,15 @@
       btn.disabled = true; btn.textContent = 'Guardando… / Saving…';
       try {
         const rutaPas = fPas ? await subirDocumento(fPas, 'pasaporte', yo.id) : yo.fotoPasaporte;
-        const rutaSel = fSel ? await subirDocumento(fSel, 'sello', yo.id) : (yo.fotoSello || '');
+        const rutaSel = (fSel && !esColombiano(val('oPais'))) ? await subirDocumento(fSel, 'sello', yo.id) : (yo.fotoSello || '');
+        const rutaRev = (fRev && esColombiano(val('oPais'))) ? await subirDocumento(fRev, 'cedula-atras', yo.id) : (yo.fotoReverso || '');
         const { error } = await supabaseClient.rpc('completar_mi_registro', { datos: {
           nombre: val('oNombre'), primer_apellido: val('oApellido1'), segundo_apellido: val('oApellido2'),
           genero: val('oGenero'), perfiles: areasOnboarding,
           fecha_nacimiento: val('oNacimiento'), pais: val('oPais'), tipo_documento: val('oTipoDoc'),
           documento: val('oDocumento').toUpperCase(), telefono: val('oTelefono'),
           fecha_llegada: val('oLlegada'), fecha_salida: noSabeSalida ? '' : val('oSalida'),
-          foto_pasaporte: rutaPas, foto_sello: rutaSel
+          foto_pasaporte: rutaPas, foto_sello: rutaSel, foto_reverso: rutaRev
         } });
         if (error) throw error;
         toast('✅ Datos enviados / Details sent', 'ok', 5000);
@@ -6546,7 +6579,9 @@
       cont.innerHTML = `
         <span class="modal-label" style="display:block; margin-top:14px;">Registro del voluntario</span>
         <div style="font-size:14px; margin-top:4px;">${estado}</div>${difs}
-        <div class="docs-ficha">${caja('🛂 Pasaporte', 'mDocPas')}${caja('🛬 Sello de entrada', 'mDocSel')}</div>`;
+        <div class="docs-ficha">${esColombiano(v.pais)
+          ? caja('🪪 Cédula adelante', 'mDocPas') + caja('🪪 Cédula atrás', 'mDocRev')
+          : caja('🛂 Pasaporte', 'mDocPas') + caja('🛬 Sello de entrada', 'mDocSel')}</div>`;
       const pintar = async (id, ruta) => {
         const a = document.getElementById(id);
         if (!a) return;
@@ -6558,7 +6593,8 @@
         a.innerHTML = /\.pdf$/i.test(ruta) ? `<div class="falta">📄 PDF</div>${titulo}` : `<img src="${url}" alt="${titulo}">${titulo}`;
       };
       pintar('mDocPas', v.fotoPasaporte);
-      pintar('mDocSel', v.fotoSello);
+      if (esColombiano(v.pais)) pintar('mDocRev', v.fotoReverso);
+      else pintar('mDocSel', v.fotoSello);
     }
 
     // ===== INGRESO (Supabase Auth) =====
