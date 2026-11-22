@@ -2220,6 +2220,7 @@
         <input type="password" id="loginClave" autocomplete="current-password" required>
         <button type="submit" class="btn-submit" id="loginBtn">Ingresar <span style="opacity:.75; font-weight:400;">/ Sign in</span></button>
         <button type="button" class="login-link" onclick="olvideClave()">¿Olvidaste tu contraseña? / Forgot password?</button>
+        <button type="button" class="login-link" style="display:block;" onclick="mostrarEnviarEnlace()">📧 ¿Te invitamos por correo y el enlace no funciona? / Invitation link not working?</button>
         <div class="login-sep"><span>¿Eres voluntario nuevo? / New volunteer?</span></div>
         <button type="button" class="btn-crear-cuenta" onclick="mostrarCrearCuenta()">✨ Crear cuenta <span style="opacity:.75; font-weight:400;">/ Create account</span></button>
       </form>
@@ -2235,12 +2236,20 @@
         <button type="submit" class="btn-submit" id="ccBtn">Crear mi cuenta <span style="opacity:.75; font-weight:400;">/ Create</span></button>
         <button type="button" class="login-link" onclick="mostrarLogin()">← Ya tengo cuenta / I have an account</button>
       </form>
+      <form id="enviarEnlaceForm" style="display:none;" autocomplete="on">
+        <h2 id="eeTitulo">Te enviamos un enlace nuevo <span style="opacity:.6; font-weight:400;">/ Get a new link</span></h2>
+        <p class="login-sub" id="eeSub">Escribe el correo donde te llegó la invitación y te mandamos un enlace nuevo para crear tu contraseña.<br><span style="opacity:.75;">Enter the email where you got the invitation and we'll send you a new link to create your password.</span></p>
+        <label for="eeCorreo">Correo <span style="opacity:.7;">/ Email</span></label>
+        <input type="email" id="eeCorreo" autocomplete="username" required>
+        <button type="submit" class="btn-submit" id="eeBtn">Enviarme enlace nuevo <span style="opacity:.75; font-weight:400;">/ Send new link</span></button>
+        <button type="button" class="login-link" onclick="mostrarLogin()">← Volver / Back</button>
+      </form>
       <form id="nuevaClaveForm" style="display:none;">
         <h2 id="nuevaClaveTitulo">Nueva contraseña</h2>
         <p class="login-sub" id="nuevaClaveSub">Escribe tu nueva contraseña (mínimo 8 caracteres).</p>
-        <label for="nuevaClave">Nueva contraseña</label>
+        <label for="nuevaClave">Nueva contraseña <span style="opacity:.7;">/ New password (mín. 8)</span></label>
         <input type="password" id="nuevaClave" autocomplete="new-password" minlength="8" required>
-        <button type="submit" class="btn-submit">Guardar contraseña</button>
+        <button type="submit" class="btn-submit">Guardar contraseña <span style="opacity:.75; font-weight:400;">/ Save password</span></button>
       </form>
       <div id="loginMsg" class="login-msg"></div>
     </div>
@@ -3022,7 +3031,7 @@
                     <option value="Otro">Otro / Other</option>
                   </select></div>
                 <div class="onb-campo"><label for="oNacimiento">Fecha de nacimiento <span class="en">/ Date of birth</span></label><input type="date" id="oNacimiento" autocomplete="bday"></div>
-                <div class="onb-campo"><label for="oPais">Nacionalidad <span class="en">/ Nationality</span></label><select id="oPais" onchange="ajustarSegunNacionalidad(true)"></select></div>
+                <div class="onb-campo"><label for="oPais">Nacionalidad <span class="en">/ Nationality</span></label><input type="search" id="oPaisBuscar" placeholder="🔎 Escribe tu país / Type your country" autocomplete="off" oninput="filtrarPaises(this.value)" style="margin-bottom:6px;"><select id="oPais" onchange="ajustarSegunNacionalidad(true)"></select></div>
                 <div class="onb-campo"><label for="oTipoDoc">Documento <span class="en">/ ID type</span></label>
                   <select id="oTipoDoc">
                     <option value="Pasaporte">Pasaporte / Passport</option>
@@ -3031,7 +3040,7 @@
                     <option value="DNI">DNI / ID Nacional</option>
                   </select></div>
                 <div class="onb-campo"><label for="oDocumento" id="oDocumentoLabel">Número de pasaporte <span class="en">/ Passport number</span></label><input type="text" id="oDocumento" autocomplete="off"></div>
-                <div class="onb-campo"><label for="oTelefono">WhatsApp <span class="en">/ Phone</span></label><input type="tel" id="oTelefono" autocomplete="tel" placeholder="+57 300 000 0000"></div>
+                <div class="onb-campo"><label for="oTelefono">WhatsApp <span class="en">/ WhatsApp (con código del país / with country code)</span></label><input type="tel" id="oTelefono" autocomplete="tel" placeholder="+57 300 000 0000"></div>
                 <div class="onb-campo"><label for="oLlegada">Fecha de llegada <span class="en">/ Arrival date</span></label><input type="date" id="oLlegada"></div>
                 <div class="onb-campo"><label for="oSalida">Fecha de salida <span class="en">/ Departure date</span></label><input type="date" id="oSalida">
                   <label class="onb-check"><input type="checkbox" id="oSalidaNoSe" onchange="document.getElementById('oSalida').disabled=this.checked"> Aún no sé <span class="en">/ Not sure yet</span></label></div>
@@ -6412,11 +6421,45 @@
       return ['pendiente', 'no especificado', 'no especificada', 'pendiente@kiwi.com'].includes(v.toLowerCase()) ? '' : v;
     }
 
+    // Nombre del país en inglés al lado del español (Alemania · Germany), sacado del navegador
+    let opcionesPaises = [];
+    const sinTildes = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    function ponerPaisesEnIngles(sel) {
+      let es, en;
+      try { es = new Intl.DisplayNames(['es'], { type: 'region' }); en = new Intl.DisplayNames(['en'], { type: 'region' }); }
+      catch (e) { return; }
+      const mapa = {};
+      for (let a = 65; a <= 90; a++) for (let b = 65; b <= 90; b++) {
+        const cod = String.fromCharCode(a) + String.fromCharCode(b);
+        try { const n = es.of(cod); if (n && n !== cod) mapa[sinTildes(n)] = en.of(cod); } catch (e) { /* código no válido */ }
+      }
+      const extra = { 'arabia saudita': 'Saudi Arabia', 'costa de marfil': 'Ivory Coast', 'republica checa (chequia)': 'Czech Republic',
+        'republica del congo': 'Republic of the Congo', 'timor oriental': 'East Timor', 'vaticano': 'Vatican City' };
+      [...sel.options].forEach(o => {
+        if (!o.value) return;
+        const ing = mapa[sinTildes(o.value)] || extra[sinTildes(o.value)];
+        if (ing && sinTildes(ing) !== sinTildes(o.value)) o.textContent = `${o.value} · ${ing}`;
+      });
+    }
+    function filtrarPaises(texto) {
+      const sel = document.getElementById('oPais');
+      const actual = sel.value;
+      const q = sinTildes(texto || '');
+      const lista = opcionesPaises.filter(o => !o.value || !q || sinTildes(o.text).includes(q));
+      sel.innerHTML = lista.map(o => `<option value="${escaparHTML(o.value)}">${escaparHTML(o.text)}</option>`).join('');
+      const conValor = lista.filter(o => o.value);
+      if (conValor.length === 1) { sel.value = conValor[0].value; ajustarSegunNacionalidad(true); }
+      else if (lista.some(o => o.value === actual)) sel.value = actual;
+    }
+
     function llenarOnboarding(yo) {
       if (onboardingLleno) return;
       onboardingLleno = true;
       const selPais = document.getElementById('oPais');
       selPais.innerHTML = '<option value="">— Elige / Choose —</option>' + document.getElementById('pais').innerHTML;
+      [...selPais.options].slice(1).filter(o => !o.value).forEach(o => o.remove());
+      ponerPaisesEnIngles(selPais);
+      opcionesPaises = [...selPais.options].map(o => ({ value: o.value, text: o.textContent }));
       const set = (id, val) => { document.getElementById(id).value = val || ''; };
       set('oNombre', yo.sinNombre ? '' : limpioPre(yo.nombre));
       set('oApellido1', limpioPre(yo.primerApellido));
@@ -6435,7 +6478,7 @@
       set('oLlegada', yo.fechaLlegada ? fechaVisualAISO(yo.fechaLlegada) : '');
       if (yo.fechaSalida) set('oSalida', fechaVisualAISO(yo.fechaSalida));
       else { document.getElementById('oSalidaNoSe').checked = true; document.getElementById('oSalida').disabled = true; }
-      document.getElementById('onbNotaPre').style.display = (yo.nombre || yo.fechaLlegada) ? 'block' : 'none';
+      document.getElementById('onbNotaPre').style.display = (!yo.sinNombre && limpioPre(yo.nombre)) ? 'block' : 'none';
       ajustarSegunNacionalidad(false);
     }
 
@@ -6518,6 +6561,7 @@
       if (!val('oNacimiento')) faltan.push('Fecha de nacimiento / Date of birth');
       if (!val('oPais')) faltan.push('Nacionalidad / Nationality');
       if (!val('oDocumento')) faltan.push(esColombiano(val('oPais')) ? 'Número de cédula / ID number' : 'Número de pasaporte / Passport number');
+      if (val('oTelefono').replace(/\D/g, '').length < 7) faltan.push('WhatsApp con código del país / WhatsApp with country code');
       if (!val('oLlegada')) faltan.push('Fecha de llegada / Arrival date');
       if (!areasOnboarding.length) faltan.push('Área en la que vas a ayudar / Area');
       const noSabeSalida = document.getElementById('oSalidaNoSe').checked;
@@ -6759,6 +6803,7 @@
 
     function mostrarCrearCuenta() {
       document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('enviarEnlaceForm').style.display = 'none';
       document.getElementById('crearCuentaForm').style.display = '';
       const c = document.getElementById('loginCorreo').value;
       if (c) document.getElementById('ccCorreo').value = c;
@@ -6768,11 +6813,53 @@
 
     function mostrarLogin(texto = '', tipo = 'error') {
       document.getElementById('crearCuentaForm').style.display = 'none';
+      document.getElementById('enviarEnlaceForm').style.display = 'none';
       document.getElementById('loginForm').style.display = '';
       document.getElementById('nuevaClaveForm').style.display = 'none';
       loginOverlay.style.display = 'flex';
       mensajeLogin(texto, tipo);
     }
+
+    // Pantalla para pedir un enlace nuevo (enlace vencido o ya usado, o cuenta creada por invitación sin contraseña)
+    function mostrarEnviarEnlace(opciones = {}) {
+      const { vencido = false, correo = '' } = opciones;
+      ['loginForm', 'crearCuentaForm', 'nuevaClaveForm'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+      document.getElementById('enviarEnlaceForm').style.display = '';
+      loginOverlay.style.display = 'flex';
+      document.getElementById('eeTitulo').innerHTML = vencido
+        ? '⏰ Tu enlace venció <span style="opacity:.6; font-weight:400;">/ Your link expired</span>'
+        : 'Te enviamos un enlace nuevo <span style="opacity:.6; font-weight:400;">/ Get a new link</span>';
+      document.getElementById('eeSub').innerHTML = vencido
+        ? 'El enlace del correo ya se usó o venció. No te preocupes: escribe tu correo y te mandamos uno nuevo para crear tu contraseña.<br><span style="opacity:.75;">The email link was already used or has expired. No worries: enter your email and we\'ll send you a new one to create your password.</span>'
+        : 'Escribe el correo donde te llegó la invitación y te mandamos un enlace nuevo para crear tu contraseña.<br><span style="opacity:.75;">Enter the email where you got the invitation and we\'ll send you a new link to create your password.</span>';
+      const c = correo || document.getElementById('loginCorreo').value || document.getElementById('ccCorreo').value;
+      if (c) document.getElementById('eeCorreo').value = c;
+      mensajeLogin('');
+    }
+
+    document.getElementById('enviarEnlaceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const correo = document.getElementById('eeCorreo').value.trim().toLowerCase();
+      if (!correo) return;
+      const btn = document.getElementById('eeBtn');
+      btn.disabled = true; mensajeLogin('Enviando… / Sending…', 'ok');
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email: correo,
+        options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname }
+      });
+      btn.disabled = false;
+      if (error) {
+        if (/signups? not allowed|not found|user not/i.test(error.message || '')) {
+          mensajeLogin('No encontramos una invitación con ese correo. Revisa que esté bien escrito o toca "Crear cuenta".\nWe couldn\'t find an invitation for that email. Check it or tap "Create account".');
+        } else if (/rate limit|seconds|security purposes/i.test(error.message || '')) {
+          mensajeLogin('Ya te enviamos un enlace hace muy poco. Espera un minuto y vuelve a intentar.\nWe just sent you a link. Wait a minute and try again.');
+        } else {
+          mensajeLogin('No se pudo enviar / Could not send: ' + error.message);
+        }
+        return;
+      }
+      mensajeLogin('📧 ¡Listo! Te enviamos un enlace nuevo a ' + correo + '. Ábrelo y crea tu contraseña. Si no lo ves, revisa Spam o Promociones.\nDone! We sent a new link to ' + correo + '. Open it and create your password. If you don\'t see it, check Spam or Promotions.', 'ok');
+    });
 
     async function leerMiUsuario(uid) {
       return supabaseClient.from('usuarios').select('id, correo, nombre, rol, voluntario_id').eq('id', uid).maybeSingle();
@@ -6795,7 +6882,7 @@
       }
       // El voluntario que entra por la invitación crea su contraseña la primera vez
       if (data.rol === 'voluntario' && !session.user.user_metadata?.clave_creada) {
-        mostrarCrearClave('Crea tu contraseña', `¡Bienvenido/a! Crea una contraseña para entrar la próxima vez con ${session.user.email}.`);
+        mostrarCrearClave('Crea tu contraseña / Create your password', `¡Bienvenido/a! Crea una contraseña para entrar la próxima vez con ${session.user.email}.\nWelcome! Create a password to sign in next time with ${session.user.email}.`);
         return;
       }
       usuarioActual = data;
@@ -6810,6 +6897,8 @@
       loginOverlay.style.display = 'flex';
       document.getElementById('loginForm').style.display = 'none';
       document.getElementById('nuevaClaveForm').style.display = '';
+      document.getElementById('enviarEnlaceForm').style.display = 'none';
+      document.getElementById('nuevaClaveSub').style.whiteSpace = 'pre-line';
       document.getElementById('nuevaClaveTitulo').textContent = titulo;
       document.getElementById('nuevaClaveSub').textContent = sub;
       mensajeLogin('');
@@ -6845,25 +6934,27 @@
 
     async function olvideClave() {
       const correo = document.getElementById('loginCorreo').value.trim();
-      if (!correo) { mensajeLogin('Escribe tu correo arriba y vuelve a tocar "¿Olvidaste tu contraseña?".'); return; }
+      if (!correo) { mensajeLogin('Escribe tu correo arriba y vuelve a tocar "¿Olvidaste tu contraseña?".\nType your email above and tap "Forgot password?" again.'); return; }
       const { error } = await supabaseClient.auth.resetPasswordForEmail(correo, {
         redirectTo: location.origin + location.pathname
       });
-      if (error) mensajeLogin('No se pudo enviar el correo: ' + error.message);
-      else mensajeLogin('Si el correo está registrado, te llegará un enlace para crear una nueva contraseña.', 'ok');
+      if (error) mensajeLogin('No se pudo enviar el correo / Could not send the email: ' + error.message);
+      else mensajeLogin('Si el correo está registrado, te llegará un enlace para crear una nueva contraseña. Revisa también Spam o Promociones.\nIf the email is registered, you\'ll get a link to create a new password. Also check Spam or Promotions.', 'ok');
     }
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('loginBtn');
-      btn.disabled = true; mensajeLogin('Ingresando…', 'ok');
+      btn.disabled = true; mensajeLogin('Ingresando… / Signing in…', 'ok');
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: document.getElementById('loginCorreo').value.trim(),
         password: document.getElementById('loginClave').value
       });
       btn.disabled = false;
       if (error) {
-        mensajeLogin(/invalid/i.test(error.message) ? 'Correo o contraseña incorrectos.' : error.message);
+        mensajeLogin(/invalid/i.test(error.message)
+          ? 'Correo o contraseña incorrectos.\nWrong email or password.\n\n¿Te invitamos por correo y nunca creaste contraseña? Toca "¿Te invitamos por correo y el enlace no funciona?".\nInvited by email and never created a password? Tap "Invitation link not working?".'
+          : error.message);
         return;
       }
       verificarAcceso(data.session);
@@ -6883,9 +6974,13 @@
       });
       btn.disabled = false;
       if (error) {
-        mensajeLogin(/registered|already/i.test(error.message)
-          ? 'Ese correo ya tiene cuenta: entra con tu contraseña.\nThis email already has an account: sign in.'
-          : 'No se pudo crear la cuenta / Could not create account: ' + error.message);
+        if (/registered|already/i.test(error.message)) {
+          // Lo más común: la invitación ya le creó la cuenta y el enlace del correo venció
+          mostrarEnviarEnlace({ correo });
+          mensajeLogin('Ese correo ya tiene cuenta (probablemente te invitamos por correo). Toca el botón y te mandamos un enlace nuevo para crear tu contraseña. Si ya tienes contraseña, toca "Volver" y entra.\nThis email already has an account (you were probably invited by email). Tap the button and we\'ll send you a new link to create your password. If you already have a password, tap "Back" and sign in.', 'ok');
+        } else {
+          mensajeLogin('No se pudo crear la cuenta / Could not create account: ' + error.message);
+        }
         return;
       }
       if (data.session) { verificarAcceso(data.session); return; }
@@ -6903,7 +6998,7 @@
         password: document.getElementById('nuevaClave').value,
         data: { clave_creada: true }
       });
-      if (error) { mensajeLogin('No se pudo cambiar: ' + error.message); return; }
+      if (error) { mensajeLogin('No se pudo guardar / Could not save: ' + error.message); return; }
       history.replaceState(null, '', location.pathname);
       const { data } = await supabaseClient.auth.getSession();
       verificarAcceso(data.session);
@@ -6911,17 +7006,25 @@
 
     supabaseClient.auth.onAuthStateChange((evento) => {
       if (evento === 'PASSWORD_RECOVERY') {
-        mostrarCrearClave('Nueva contraseña', 'Escribe tu nueva contraseña (mínimo 8 caracteres).');
+        mostrarCrearClave('Nueva contraseña / New password', 'Escribe tu nueva contraseña (mínimo 8 caracteres).\nType your new password (at least 8 characters).');
       } else if (evento === 'SIGNED_OUT' && usuarioActual) {
         detenerApp();
-        mostrarLogin('Tu sesión se cerró. Vuelve a ingresar.');
+        mostrarLogin('Tu sesión se cerró. Vuelve a ingresar.\nYou were signed out. Please sign in again.');
       }
     });
 
     // Se lee ahora (antes de que Supabase limpie la URL) para saber si viene del enlace de "olvidé mi contraseña"
     const esRecuperacion = location.hash.includes('type=recovery');
+    // Si el enlace del correo venció o ya se usó, Supabase vuelve con #error=...&error_code=otp_expired
+    const errorEnlace = new URLSearchParams(location.hash.slice(1)).get('error_code')
+      || new URLSearchParams(location.search).get('error_code');
     supabaseClient.auth.getSession().then(({ data }) => {
       if (esRecuperacion) return; // lo maneja PASSWORD_RECOVERY
+      if (!data.session && errorEnlace) {
+        history.replaceState(null, '', location.pathname);
+        mostrarEnviarEnlace({ vencido: true });
+        return;
+      }
       verificarAcceso(data.session);
     });
   </script>
